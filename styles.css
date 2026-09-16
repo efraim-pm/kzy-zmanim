@@ -1,0 +1,189 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: #F8F6F1;
+  color: #1B2A4A;
+  line-height: 1.5;
+}
+.hidden { display: none !important; }
+
+.site-header {
+  background: #1B2A4A;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 80px;
+  height: 96px;
+}
+.brand { display: flex; align-items: center; gap: 16px; }
+.brand-icon {
+  width: 48px; height: 48px;
+  background: rgba(201,168,76,0.2);
+  border-radius: 50%;
+  display: grid; place-items: center;
+  font-size: 24px; color: #C9A84C;
+}
+.brand-title { font-size: 22px; font-weight: 700; }
+.brand-subtitle { font-size: 13px; opacity: 0.7; }
+.nav-controls { display: flex; gap: 8px; align-items: center; }
+.btn-today {
+  background: #C9A84C; color: #fff; border: none;
+  padding: 8px 20px; border-radius: 8px; font-weight: 600;
+  cursor: pointer; font-size: 14px;
+}
+.btn-today:hover { background: #b8943f; }
+.btn-nav {
+  width: 36px; height: 36px; border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.3);
+  background: transparent; color: #fff;
+  font-size: 20px; cursor: pointer;
+  display: grid; place-items: center;
+}
+.btn-nav:hover { background: rgba(255,255,255,0.1); }
+
+.tab-bar {
+  background: #fff;
+  border-bottom: 1px solid #EADDC9;
+  padding: 0 80px;
+  display: flex; gap: 0;
+}
+.tab {
+  padding: 16px 24px; border: none; background: none;
+  font-size: 15px; font-weight: 500; color: #6B7280;
+  cursor: pointer; border-bottom: 3px solid transparent;
+  transition: all 0.2s;
+}
+.tab.active { color: #C9A84C; border-bottom-color: #C9A84C; font-weight: 600; }
+.tab:hover { color: #1B2A4A; }
+
+.content { max-width: 1440px; margin: 0 auto; padding: 32px 120px 48px; }
+
+.date-hero {
+  background: #fff;
+  border-radius: 16px;
+  padding: 28px 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.gregorian-hebrew-date {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 28px; font-weight: 700; line-height: 1.3;
+}
+.date-tags { display: flex; gap: 12px; margin-top: 12px; flex-wrap: wrap; }
+.tag {
+  font-size: 12px; padding: 4px 14px; border-radius: 999px;
+  font-weight: 500;
+}
+.tag-parasha { background: #F0E6D0; color: #8B6914; }
+.tag-daf { background: #E8EDF7; color: #3B5998; border: 1px solid #D0D8EC; }
+.deadline-box { text-align: right; }
+.deadline-label { display: block; font-size: 11px; font-weight: 600; color: #6B7280; letter-spacing: 0.5px; }
+.deadline-value { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 700; color: #C9A84C; }
+
+.zmanim-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+.zman-card, .davening-card {
+  background: #fff; border-radius: 16px; padding: 28px 32px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.davening-card { margin-bottom: 24px; }
+.card-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 20px; font-weight: 600; margin-bottom: 20px;
+  padding-bottom: 12px; border-bottom: 1px solid #F0ECE3;
+}
+
+.zman-list { list-style: none; }
+.zman-row {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  padding: 10px 0; border-bottom: 1px solid #F5F1EA;
+}
+.zman-row:last-child { border-bottom: none; }
+.zman-row.highlight {
+  background: rgba(201,168,76,0.08);
+  margin: 0 -16px; padding: 10px 16px;
+  border-radius: 8px; border: 1px solid rgba(201,168,76,0.25);
+}
+.zman-label { display: flex; align-items: baseline; gap: 8px; }
+.zman-english { font-size: 14px; font-weight: 500; }
+.zman-hebrew { font-size: 14px; font-weight: 600; color: #C9A84C; }
+.zman-desc { font-size: 11px; color: #9CA3AF; margin-top: 2px; }
+.zman-time { font-size: 15px; font-weight: 700; white-space: nowrap; }
+.zman-info { flex: 1; min-width: 0; }
+
+.shabbos-divider { height: 1px; background: #E5DFD3; margin: 20px 0; }
+.shabbos-header {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 18px; font-weight: 600; margin-bottom: 16px;
+}
+
+.calendar-card {
+  background: #fff; border-radius: 16px; padding: 28px 32px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06); margin-bottom: 24px;
+}
+.calendar-header {
+  display: flex; align-items: center; gap: 16px; margin-bottom: 24px;
+}
+.calendar-header .btn-nav { color: #1B2A4A; border-color: #D1C9B8; }
+.month-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 22px; font-weight: 700;
+}
+.calendar-mode-label { margin-left: auto; font-size: 13px; color: #9CA3AF; }
+.calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+.cal-day-header {
+  text-align: center; font-size: 13px; font-weight: 600;
+  color: #6B7280; padding: 8px 0;
+}
+.cal-day-header.shabbos { color: #C9A84C; }
+
+.cal-cell {
+  border: 1px solid #EADDC9; border-radius: 10px;
+  padding: 8px; min-height: 120px;
+  display: flex; flex-direction: column; gap: 4px;
+  font-size: 10px; color: #4B5563;
+  background: #fff;
+}
+.cal-cell.empty { border-color: transparent; background: transparent; min-height: 0; }
+.cal-cell.shabbos { background: #F7F3E8; border-color: #C9A84C; }
+.cal-cell.yomtov { background: #F7F3E8; border-color: #C9A84C; }
+.cal-cell.erev { background: #FBF8F0; border-color: #D4C48A; }
+.cal-cell.today { border: 2px solid #C9A84C; box-shadow: 0 0 0 2px rgba(201,168,76,0.2); }
+
+.cal-date-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
+.cal-hebrew-date {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 18px; font-weight: 700; color: #1B2A4A;
+}
+.cal-greg-date { font-size: 10px; color: #9CA3AF; }
+.cal-holiday-tag {
+  font-size: 8px; font-weight: 600; color: #C9A84C;
+  background: rgba(201,168,76,0.15); padding: 1px 6px;
+  border-radius: 999px; white-space: nowrap;
+}
+.cal-times { font-size: 9px; color: #6B7280; line-height: 1.5; }
+.cal-times div { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.site-footer {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 16px 0; font-size: 12px; color: #9CA3AF;
+}
+.site-footer a { color: #C9A84C; text-decoration: none; }
+.site-footer a:hover { text-decoration: underline; }
+
+@media (max-width: 1024px) {
+  .site-header { padding: 0 24px; }
+  .tab-bar { padding: 0 24px; }
+  .content { padding: 24px; }
+  .zmanim-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 768px) {
+  .site-header { height: auto; padding: 16px 20px; flex-direction: column; gap: 12px; }
+  .date-hero { flex-direction: column; gap: 16px; }
+  .deadline-box { text-align: left; }
+  .cal-cell { min-height: 90px; padding: 6px; }
+  .cal-hebrew-date { font-size: 14px; }
+}
