@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KZY Calendar &amp; Zmanim — Chestnut Ridge, NY</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="brand">
+      <div class="brand-icon">✡</div>
+      <div>
+        <h1 class="brand-title">KZY Calendar &amp; Zmanim</h1>
+        <p class="brand-subtitle">Location: Chestnut Ridge, NY (41.0903°N, 74.0484°W)</p>
+      </div>
+    </div>
+    <div class="nav-controls">
+      <button class="btn-today" id="btnToday">Today</button>
+      <button class="btn-nav" id="btnPrev">‹</button>
+      <button class="btn-nav" id="btnNext">›</button>
+    </div>
+  </header>
+
+  <nav class="tab-bar">
+    <button class="tab active" data-tab="zmanim">☀ Zmanim</button>
+    <button class="tab" data-tab="calendar">📅 Calendar</button>
+  </nav>
+
+  <main class="content" id="tab-zmanim">
+    <section class="date-hero" id="dateHero">
+      <div class="date-details">
+        <h2 class="gregorian-hebrew-date" id="mainDate">Loading…</h2>
+        <div class="date-tags">
+          <span class="tag tag-parasha" id="tagParasha"></span>
+          <span class="tag tag-daf" id="tagDaf"></span>
+        </div>
+      </div>
+      <div class="deadline-box">
+        <span class="deadline-label">NEXT HALACHIC DEADLINE</span>
+        <span class="deadline-value" id="nextDeadline">—</span>
+      </div>
+    </section>
+
+    <section class="zmanim-grid">
+      <div class="zman-card">
+        <h3 class="card-title">☀ Morning Times</h3>
+        <ul class="zman-list" id="morningList"></ul>
+      </div>
+      <div class="zman-card">
+        <h3 class="card-title">🌙 Afternoon &amp; Evening Times</h3>
+        <ul class="zman-list" id="eveningList"></ul>
+      </div>
+    </section>
+
+    <section class="davening-card">
+      <h3 class="card-title">✡ Today's Davening Times / זמני תפילה</h3>
+      <ul class="zman-list" id="daveningList"></ul>
+      <div class="shabbos-divider"></div>
+      <h4 class="shabbos-header">☆ Shabbos Times</h4>
+      <ul class="zman-list" id="shabbosList"></ul>
+    </section>
+
+    <footer class="site-footer">
+      <span>Data sourced from Hebcal.com &bull; Zmanim calculated for Lat 41.0903, Lon -74.0484</span>
+      <a href="https://kosherjava.com/maps" target="_blank">Clarity &amp; Precision in Halacha</a>
+    </footer>
+  </main>
+
+  <main class="content hidden" id="tab-calendar">
+    <section class="date-hero" id="dateHeroCal">
+      <div class="date-details">
+        <h2 class="gregorian-hebrew-date" id="mainDateCal">Loading…</h2>
+        <div class="date-tags">
+          <span class="tag tag-parasha" id="tagParashaCal"></span>
+          <span class="tag tag-daf" id="tagDafCal"></span>
+        </div>
+      </div>
+      <div class="deadline-box">
+        <span class="deadline-label">NEXT HALACHIC DEADLINE</span>
+        <span class="deadline-value" id="nextDeadlineCal">—</span>
+      </div>
+    </section>
+
+    <section class="calendar-card">
+      <div class="calendar-header">
+        <button class="btn-nav" id="calPrev">‹</button>
+        <h3 class="month-title" id="monthTitle">Loading…</h3>
+        <button class="btn-nav" id="calNext">›</button>
+        <span class="calendar-mode-label">Hebrew lunar monthly view</span>
+      </div>
+      <div class="calendar-grid" id="calendarGrid"></div>
+    </section>
+
+    <footer class="site-footer">
+      <span>Data sourced from Hebcal.com &bull; Zmanim calculated for Lat 41.0903, Lon -74.0484</span>
+      <a href="https://kosherjava.com/maps" target="_blank">Clarity &amp; Precision in Halacha</a>
+    </footer>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
