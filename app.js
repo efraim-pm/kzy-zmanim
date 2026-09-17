@@ -131,16 +131,17 @@ function sunriseUTCForAngle(jd, lat, lon, angle, rising) {
   const decl = sunDeclination(tnoon);
   const hourAngle = hourAngleForAngle(lat, decl, angle);
   if (isNaN(hourAngle)) return NaN;
-  const delta = rising ? -hourAngle : hourAngle;
-  const timeDiff = 4 * (lon + delta);
-  const timeUTC = 720 + timeDiff - eqOfTime(tnoon);
+  // NOAA formula: sunrise = 720 - 4*(lon + HA) - eqTime
+  //               sunset  = 720 - 4*(lon - HA) - eqTime
+  const delta = rising ? hourAngle : -hourAngle;
+  const timeUTC = 720 - 4 * (lon + delta) - eqOfTime(tnoon);
+  // Second-pass refinement
   const newt = toJulianCenturies(jd + timeUTC / 1440.0);
   const decl2 = sunDeclination(newt);
   const hourAngle2 = hourAngleForAngle(lat, decl2, angle);
   if (isNaN(hourAngle2)) return NaN;
-  const delta2 = rising ? -hourAngle2 : hourAngle2;
-  const timeDiff2 = 4 * (lon + delta2);
-  return 720 + timeDiff2 - eqOfTime(newt);
+  const delta2 = rising ? hourAngle2 : -hourAngle2;
+  return 720 - 4 * (lon + delta2) - eqOfTime(newt);
 }
 
 function hourAngleForAngle(lat, decl, angle) {
@@ -579,7 +580,6 @@ async function renderCalendar() {
   if (monthData && monthData.items) {
     const hdItems = monthData.items.filter(i => i.category === 'hebdate');
     if (hdItems.length > 0) {
-      // Extract Hebrew month name from first and last Hebrew date
       const firstHeb = hdItems[0] ? hdItems[0].hebrew : '';
       badgeEl.textContent = firstHeb.replace(/[^֐-׿\s]/g, '').trim().split(' ').pop() || '';
     }
@@ -626,7 +626,6 @@ function renderCalendarGrid(year, month, eventsMap) {
   const todayStr = today.toISOString().split('T')[0];
 
   let cells = '';
-  // Empty cells before first day
   for (let i = 0; i < firstDay; i++) {
     cells += '<div class="cal-cell empty"></div>';
   }
@@ -645,7 +644,6 @@ function renderCalendarGrid(year, month, eventsMap) {
     if (ev.candles) cellContent += `<div class="cell-schedule"><strong>🕯</strong> ${ev.candles}</div>`;
     if (ev.havdalah) cellContent += `<div class="cell-schedule"><strong>✨</strong> ${ev.havdalah}</div>`;
 
-    // Add Shabbos schedule snippet
     if (isSat) {
       const z = getZmanim(dateObj);
       cellContent += `<div class="cell-schedule"><strong>Shacharis:</strong> 8:30 AM</div>`;
@@ -655,7 +653,6 @@ function renderCalendarGrid(year, month, eventsMap) {
     cells += `<div class="cal-cell ${isToday ? 'today' : ''} ${isSat ? 'shabbos' : ''}">${cellContent}</div>`;
   }
 
-  // Fill remaining cells
   const totalCells = firstDay + daysInMonth;
   const remaining = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
   for (let i = 0; i < remaining; i++) {
@@ -704,7 +701,6 @@ function renderCalendarAgenda(year, month, eventsMap) {
 
 function renderNewsletterInfo() {
   const infoEl = document.getElementById('nl-date-info');
-  // Find upcoming Shabbos
   let shabbos = new Date();
   while (shabbos.getDay() !== 6) shabbos.setDate(shabbos.getDate() + 1);
   const shabbosStr = shabbos.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
@@ -712,31 +708,25 @@ function renderNewsletterInfo() {
 }
 
 function isPirkeiAvosSeason(date) {
-  // Pirkei Avos: from Shabbos after Pesach through the Shabbos before Rosh Hashana
-  // Simplified: Hebrew months Iyar through Elul (approximately April-September)
-  const month = date.getMonth(); // 0-indexed
-  return month >= 3 && month <= 8; // April through September (approximate)
+  const month = date.getMonth();
+  return month >= 3 && month <= 8;
 }
 
 async function renderNewsletter() {
   const nlPage = document.getElementById('nl-page');
   nlPage.innerHTML = '<div class="nl-placeholder">Generating newsletter...</div>';
 
-  // Find upcoming Shabbos (Friday night / Saturday)
   let friday = new Date();
   while (friday.getDay() !== 5) friday.setDate(friday.getDate() + 1);
   let shabbos = new Date(friday);
   shabbos.setDate(shabbos.getDate() + 1);
 
-  // Get zmanim for Friday (candle lighting) and Shabbos
   const fridayZmanim = getZmanim(friday);
   const shabbosZmanim = getZmanim(shabbos);
 
-  // Hebrew dates
   const fridayHd = await getHebrewDate(friday);
   const shabbosHd = await getHebrewDate(shabbos);
 
-  // Get Hebcal data for parsha
   const hebcalData = await getHebcalData(shabbos);
   let parsha = 'פרשת השבוע';
   let parshaEn = '';
@@ -748,7 +738,6 @@ async function renderNewsletter() {
     }
   }
 
-  // Overrides
   const minchaOverride = document.getElementById('nl-mincha-override').value;
   const avosOverride = document.getElementById('nl-avos-override').value;
   const minchaBOverride = document.getElementById('nl-minchab-override').value;
@@ -762,7 +751,6 @@ async function renderNewsletter() {
   const sponsors = document.getElementById('nl-sponsors').value;
   const seudos = document.getElementById('nl-seudos').value;
 
-  // Calculated times
   const candleLighting = fmtTime(fridayZmanim.candleLighting);
   const minchaErev = minchaOverride || fmtTime(new Date(fridayZmanim.shkiah.getTime() - 18 * 60000));
   const shkiah = fmtTime(shabbosZmanim.shkiah);
@@ -770,23 +758,18 @@ async function renderNewsletter() {
   const maarivTime = maarivOverride || fmtTime(new Date(shabbosZmanim.shkiah.getTime() + 55 * 60000));
   const torahStoriesTime = torahStoriesOverride || '9:45 AM';
 
-  // Pirkei Avos
   const isAvos = isPirkeiAvosSeason(shabbos);
   const avosChapter = avosOverride || (isAvos ? 'פרק א' : '');
 
-  // Shalosh Seudos
   const isSummer = shabbosZmanim.shkiah && (shabbosZmanim.shkiah.getHours() * 60 + shabbosZmanim.shkiah.getMinutes()) >= 1135;
   const shaloshSeudos = isSummer ? '' : 'Shalosh Seudos in shul';
 
-  // English date for header
   const engDateStr = shabbos.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-  // Hebrew date
   const hebDateStr = shabbosHd ? shabbosHd.hebrew : '';
 
-  // Emblem — uses local file from your repo
+  // Emblem — local file from repo
   const emblemUrl = 'emblem.png';
 
-  // Build newsletter HTML
   nlPage.innerHTML = `
     <div class="nl-header">
       <div class="nl-logo"><img src="${emblemUrl}" alt="KZY Emblem"></div>
