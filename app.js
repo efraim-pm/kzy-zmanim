@@ -1,5 +1,5 @@
 /* ============================================================
-   Jewish Calendar & Zmanim — Kehal Zichron Yaakov
+   Jewish Calendar & Zmanim — Kehel Zichron Yaakov
    Chestnut Ridge, NY
    ============================================================ */
 
@@ -11,8 +11,8 @@ const CONFIG = {
   tzid: 'America/New_York',
   shulName: 'Kehel Zichron Yaakov',
   shulNameHe: 'קהל זכרון יעקב',
-  ravName: 'Rabbi Moshe Langer',
-  address: '8 Roxbury Court, Chestnut Ridge, NY 10977',
+  ravName: 'Rabbi',
+  address: '8 Roxbury Court Chestnut Ridge, NY 10977',
 };
 
 // ===== STATE =====
@@ -64,11 +64,12 @@ function toJulianCenturies(jd) {
   return (jd - 2451545.0) / 36525.0;
 }
 
-function solarNoonUTC(jc, lon) {
-  const tnoon = toJulianCenturies(2451545.0 + (-lon / 360));
+// FIXED: takes Julian Day (jd), not Julian Centuries — matches KosherJava NOAACalculator
+function solarNoonUTC(jd, lon) {
+  const tnoon = toJulianCenturies(jd + (-lon / 360));
   let eqTime = eqOfTime(tnoon);
   const solNoon = 720 + (-lon * 4) - eqTime;
-  const newt = toJulianCenturies(2451545.0 + solNoon / 1440.0);
+  const newt = toJulianCenturies(jd + solNoon / 1440.0);
   eqTime = eqOfTime(newt);
   let nv = 720 + (-lon * 4) - eqTime;
   while (nv < 0) nv += 1440;
@@ -125,8 +126,7 @@ function radToDeg(r) { return r * 180 / Math.PI; }
  * Returns UTC minutes from midnight.
  */
 function sunriseUTCForAngle(jd, lat, lon, angle, rising) {
-  const t = toJulianCenturies(jd);
-  const noonmin = solarNoonUTC(t, lon);
+  const noonmin = solarNoonUTC(jd, lon);  // FIXED: pass jd (was passing Julian Centuries)
   const tnoon = toJulianCenturies(jd + noonmin / 1440.0);
   const decl = sunDeclination(tnoon);
   const hourAngle = hourAngleForAngle(lat, decl, angle);
@@ -188,7 +188,7 @@ function getZmanim(date) {
 
   const sunriseMin = utcToLocal(sunriseUTCForAngle(jd, CONFIG.lat, CONFIG.lon, zenithSunrise, true));
   const sunsetMin = utcToLocal(sunriseUTCForAngle(jd, CONFIG.lat, CONFIG.lon, zenithSunset, false));
-  const noonMin = utcToLocal(solarNoonUTC(toJulianCenturies(jd), CONFIG.lon));
+  const noonMin = utcToLocal(solarNoonUTC(jd, CONFIG.lon));  // FIXED: pass jd directly
 
   // Alos Hashachar (72 minutes before sunrise)
   const alosMin = sunriseMin !== null ? sunriseMin - 72 : null;
