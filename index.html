@@ -1,103 +1,173 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>KZY Calendar &amp; Zmanim — Chestnut Ridge, NY</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jewish Calendar & Zmanim - Kehel Zichron Yaakov</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  <!-- Header with shul photo background -->
   <header class="site-header">
-    <div class="brand">
-      <div class="brand-icon">✡</div>
-      <div>
-        <h1 class="brand-title">KZY Calendar &amp; Zmanim</h1>
-        <p class="brand-subtitle">Location: Chestnut Ridge, NY (41.0903°N, 74.0484°W)</p>
+    <div class="header-bg"></div>
+    <div class="header-gradient"></div>
+    <div class="header-content">
+      <div class="brand-section">
+        <div class="logo-badge">&#x2721;</div>
+        <div class="title-group">
+          <h1 class="site-title">Jewish Calendar & Zmanim</h1>
+          <p class="site-subtitle">
+            <span class="location-dot">&#9679;</span>
+            Location: Chestnut Ridge, NY (41.0903&deg;N, 74.0484&deg;W)
+          </p>
+        </div>
       </div>
-    </div>
-    <div class="nav-controls">
-      <button class="btn-today" id="btnToday">Today</button>
-      <button class="btn-nav" id="btnPrev">‹</button>
-      <button class="btn-nav" id="btnNext">›</button>
+      <div class="nav-controls">
+        <button class="btn-today" id="btnToday">Today</button>
+        <div class="arrow-nav">
+          <button class="arrow-btn" id="btnPrev">&#8249;</button>
+          <button class="arrow-btn" id="btnNext">&#8250;</button>
+        </div>
+      </div>
     </div>
   </header>
 
+  <!-- Tab Bar -->
   <nav class="tab-bar">
-    <button class="tab active" data-tab="zmanim">☀ Zmanim</button>
-    <button class="tab" data-tab="calendar">📅 Calendar</button>
+    <button class="tab active" data-tab="zmanim">
+      <span class="tab-icon">&#9788;</span> Zmanim
+    </button>
+    <button class="tab" data-tab="calendar">
+      <span class="tab-icon">&#128197;</span> Calendar
+    </button>
+    <button class="tab" data-tab="newsletter">
+      <span class="tab-icon">&#128240;</span> Newsletter
+    </button>
   </nav>
 
-  <main class="content" id="tab-zmanim">
+  <!-- Zmanim Tab -->
+  <main class="content-container" id="zmanimTab">
     <section class="date-hero" id="dateHero">
-      <div class="date-details">
-        <h2 class="gregorian-hebrew-date" id="mainDate">Loading…</h2>
-        <div class="date-tags">
-          <span class="tag tag-parasha" id="tagParasha"></span>
-          <span class="tag tag-daf" id="tagDaf"></span>
-        </div>
+      <div class="date-info">
+        <h2 class="date-english" id="dateEnglish"></h2>
+        <h2 class="date-hebrew" id="dateHebrew"></h2>
+        <div class="date-tags" id="dateTags"></div>
       </div>
-      <div class="deadline-box">
-        <span class="deadline-label">NEXT HALACHIC DEADLINE</span>
-        <span class="deadline-value" id="nextDeadline">—</span>
+      <div class="next-zman" id="nextZman">
+        <span class="next-label">NEXT HALACHIC DEADLINE</span>
+        <span class="next-time" id="nextZmanTime"></span>
       </div>
     </section>
 
     <section class="zmanim-grid">
-      <div class="zman-card">
-        <h3 class="card-title">☀ Morning Times</h3>
-        <ul class="zman-list" id="morningList"></ul>
+      <div class="zmanim-card" id="morningTimes">
+        <h3 class="card-title">&#9788; Morning Times</h3>
+        <div class="zman-list" id="morningList"></div>
       </div>
-      <div class="zman-card">
-        <h3 class="card-title">🌙 Afternoon &amp; Evening Times</h3>
-        <ul class="zman-list" id="eveningList"></ul>
+      <div class="zmanim-card" id="afternoonTimes">
+        <h3 class="card-title">&#9788; Afternoon & Evening Times</h3>
+        <div class="zman-list" id="afternoonList"></div>
       </div>
     </section>
 
-    <section class="davening-card">
-      <h3 class="card-title">✡ Today's Davening Times / זמני תפילה</h3>
-      <ul class="zman-list" id="daveningList"></ul>
-      <div class="shabbos-divider"></div>
-      <h4 class="shabbos-header">☆ Shabbos Times</h4>
-      <ul class="zman-list" id="shabbosList"></ul>
+    <section class="davening-section" id="daveningSection">
+      <h3 class="section-title" id="daveningTitle">
+        <span>&#9201;</span>
+        Today's Davening Times / <span class="hebrew-text">&#1494;&#1502;&#1504;&#1497; &#1514;&#1508;&#1497;&#1500;&#1492;</span>
+      </h3>
+      <div class="davening-list" id="daveningList"></div>
+      <div class="shabbos-section" id="shabbosSection">
+        <h4 class="shabbos-title">&#10022; Shabbos Times</h4>
+        <div class="davening-list" id="shabbosList"></div>
+      </div>
     </section>
 
-    <footer class="site-footer">
-      <span>Data sourced from Hebcal.com &bull; Zmanim calculated for Lat 41.0903, Lon -74.0484</span>
-      <a href="https://kosherjava.com/maps" target="_blank">Clarity &amp; Precision in Halacha</a>
+    <footer class="footer">
+      <span>Data sourced from KosherJava.com &middot; Zmanim calculated for Lat 41.0903, Lon -74.0484</span>
+      <span class="footer-tagline">Clarity & Precision in Halacha</span>
     </footer>
   </main>
 
-  <main class="content hidden" id="tab-calendar">
-    <section class="date-hero" id="dateHeroCal">
-      <div class="date-details">
-        <h2 class="gregorian-hebrew-date" id="mainDateCal">Loading…</h2>
-        <div class="date-tags">
-          <span class="tag tag-parasha" id="tagParashaCal"></span>
-          <span class="tag tag-daf" id="tagDafCal"></span>
-        </div>
+  <!-- Calendar Tab -->
+  <main class="content-container hidden" id="calendarTab">
+    <section class="date-hero" id="calDateHero">
+      <div class="date-info">
+        <h2 class="date-english" id="calDateEnglish"></h2>
+        <h2 class="date-hebrew" id="calDateHebrew"></h2>
+        <div class="date-tags" id="calDateTags"></div>
       </div>
-      <div class="deadline-box">
-        <span class="deadline-label">NEXT HALACHIC DEADLINE</span>
-        <span class="deadline-value" id="nextDeadlineCal">—</span>
+      <div class="next-zman" id="calNextZman">
+        <span class="next-label">NEXT HALACHIC DEADLINE</span>
+        <span class="next-time" id="calNextZmanTime"></span>
       </div>
     </section>
 
-    <section class="calendar-card">
-      <div class="calendar-header">
-        <button class="btn-nav" id="calPrev">‹</button>
-        <h3 class="month-title" id="monthTitle">Loading…</h3>
-        <button class="btn-nav" id="calNext">›</button>
-        <span class="calendar-mode-label">Hebrew lunar monthly view</span>
+    <section class="calendar-card" id="calendarCard">
+      <div class="month-nav">
+        <button class="month-arrow" id="monthPrev">&#8249;</button>
+        <h3 class="month-title" id="monthTitle"></h3>
+        <button class="month-arrow" id="monthNext">&#8250;</button>
+        <span class="month-summary" id="monthSummary">Hebrew lunar monthly view</span>
+        <span class="month-days-badge" id="monthDaysBadge"></span>
+      </div>
+      <div class="days-header">
+        <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span class="shabbos-header">Sat</span>
       </div>
       <div class="calendar-grid" id="calendarGrid"></div>
     </section>
 
-    <footer class="site-footer">
-      <span>Data sourced from Hebcal.com &bull; Zmanim calculated for Lat 41.0903, Lon -74.0484</span>
-      <a href="https://kosherjava.com/maps" target="_blank">Clarity &amp; Precision in Halacha</a>
+    <footer class="footer">
+      <span>Data sourced from KosherJava.com &middot; Zmanim calculated for Lat 41.0903, Lon -74.0484</span>
+      <span class="footer-tagline">Clarity & Precision in Halacha</span>
+    </footer>
+  </main>
+
+  <!-- Newsletter Tab -->
+  <main class="content-container hidden" id="newsletterTab">
+    <div class="newsletter-controls no-print">
+      <h3>Weekly Newsletter Generator</h3>
+      <p class="nl-subtitle">Auto-filled for this Shabbos. Edit announcements below, then print.</p>
+      <div class="nl-actions">
+        <button class="btn-today" id="nlPrint" onclick="window.print()">&#128424; Print Newsletter</button>
+        <button class="btn-secondary" id="nlReset">Reset to Defaults</button>
+      </div>
+    </div>
+
+    <!-- Editable Overrides -->
+    <div class="nl-overrides no-print" id="nlOverrides">
+      <h4>Schedule Overrides</h4>
+      <div class="override-grid">
+        <label>Shabbos Shachris: <input type="text" id="ovShachris" placeholder="8:30"></label>
+        <label>Shabbos Mincha B: <input type="text" id="ovMinchaB" placeholder="auto"></label>
+        <label>Shiur Time: <input type="text" id="ovShiur" placeholder="auto (Mincha-30)"></label>
+        <label>Erev Shabbos Mincha adj: <input type="text" id="ovErevMincha" placeholder="auto"></label>
+      </div>
+      <h4>Announcements</h4>
+      <div class="announce-grid">
+        <label>Alert Box: <textarea id="annAlert" rows="2" placeholder="e.g. Beginning this week, Mincha on Friday will be 15 minutes before Shkia."></textarea></label>
+        <label>Likras Shabbos Sponsor: <textarea id="annLikras" rows="2" placeholder="Sponsored anonymously&#10;&#1500;&#1494;&#1499;&#1493;&#1514; &#1512;&#1508;&#1493;&#1488;&#1492; &#1513;&#1500;&#1497;&#1502;&#1492;"></textarea></label>
+        <label>Mazal Tov: <textarea id="annMazalTov" rows="3" placeholder="The Simons family invites everyone to a kiddush..."></textarea></label>
+        <label>Shabbos Afternoon Shiur Topic: <textarea id="annShiurTopic" rows="2" placeholder="Can one wash his hands for bread in the bathroom sink?"></textarea></label>
+        <label>Torah & Stories / Special Programs: <textarea id="annTorah" rows="2" placeholder="For boys under Bar Mitzvah&#10;Shabbos morning 9:45"></textarea></label>
+        <label>Friday Night Oneg/Shiur: <textarea id="annFridayNight" rows="2" placeholder="Leave blank if none"></textarea></label>
+        <label>Shalosh Seudos Sponsor: <textarea id="annShalosh" rows="2" placeholder="Leave blank if none"></textarea></label>
+        <label>Avos Ubanim Sponsor: <textarea id="annAvos" rows="2" placeholder="Leave blank if none"></textarea></label>
+        <label>Additional Maariv: <input type="text" id="annMaariv" placeholder="e.g. 8:30"></label>
+        <label>Special Shiur/Program: <textarea id="annSpecial" rows="2" placeholder="Leave blank if none"></textarea></label>
+        <label>Extra Content: <textarea id="annExtra" rows="3" placeholder="Any additional content for the bulletin"></textarea></label>
+      </div>
+    </div>
+
+    <!-- Print Preview -->
+    <div class="newsletter-preview" id="newsletterPreview">
+      <!-- Dynamically filled by JS -->
+    </div>
+
+    <footer class="footer no-print">
+      <span>Data sourced from KosherJava.com &middot; Zmanim calculated for Lat 41.0903, Lon -74.0484</span>
+      <span class="footer-tagline">Clarity & Precision in Halacha</span>
     </footer>
   </main>
 
