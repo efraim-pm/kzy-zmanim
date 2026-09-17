@@ -1,175 +1,153 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Jewish Calendar & Zmanim - Kehel Zichron Yaakov</title>
+  <title>Jewish Calendar & Zmanim — Kehel Zichron Yaakov</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Inter:wght@400;500;600;700&family=Crimson+Pro:wght@400;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <!-- Header with shul photo background -->
+  <!-- ===== HEADER ===== -->
   <header class="site-header">
-    <div class="header-bg"></div>
-    <div class="header-gradient"></div>
-    <div class="header-content">
+    <div class="header-inner">
       <div class="brand-section">
-        <div class="logo-badge">&#x2721;</div>
-        <div class="title-group">
-          <h1 class="site-title">Jewish Calendar & Zmanim</h1>
-          <p class="site-subtitle">
-            <span class="location-dot">&#9679;</span>
-            Location: Chestnut Ridge, NY (41.0903&deg;N, 74.0484&deg;W)
-          </p>
+        <div class="brand-icon">&#x2721;</div>
+        <div>
+          <h1 class="brand-title">Jewish Calendar & Zmanim</h1>
+          <p class="brand-subtitle">&#x1F4CD; Location: Chestnut Ridge, NY (41.0903°N, 74.0484°W)</p>
         </div>
       </div>
+      <div class="header-hebrew">
+        <span class="hebrew-title">קהל זכרון יעקב</span>
+        <span class="hebrew-sub">ע״ש ר׳ יעקב דב שטרנבוך ז״ל</span>
+      </div>
       <div class="nav-controls">
-        <button class="btn-today" id="btnToday">Today</button>
-        <div class="arrow-nav">
-          <button class="arrow-btn" id="btnPrev">&#8249;</button>
-          <button class="arrow-btn" id="btnNext">&#8250;</button>
-        </div>
+        <button class="today-btn" onclick="goToday()">Today</button>
+        <button class="nav-arrow" onclick="prevDay()">&#x276E;</button>
+        <button class="nav-arrow" onclick="nextDay()">&#x276F;</button>
       </div>
     </div>
   </header>
 
-  <!-- Tab Bar -->
+  <!-- ===== TAB BAR ===== -->
   <nav class="tab-bar">
-    <button class="tab active" data-tab="zmanim">
-      <span class="tab-icon">&#9788;</span> Zmanim
-    </button>
-    <button class="tab" data-tab="calendar">
-      <span class="tab-icon">&#128197;</span> Calendar
-    </button>
-    <button class="tab" data-tab="newsletter">
-      <span class="tab-icon">&#128240;</span> Newsletter
-    </button>
+    <button class="tab active" data-tab="zmanim" onclick="switchTab('zmanim')">&#x1F54E; Zmanim</button>
+    <button class="tab" data-tab="calendar" onclick="switchTab('calendar')">&#x1F4C5; Calendar</button>
+    <button class="tab" data-tab="newsletter" onclick="switchTab('newsletter')">&#x1F4F0; Newsletter</button>
   </nav>
 
-  <!-- Zmanim Tab -->
-  <main class="content-container" id="zmanimTab">
-    <section class="date-hero" id="dateHero">
-      <div class="date-info">
-        <h2 class="date-english" id="dateEnglish"></h2>
-        <h2 class="date-hebrew" id="dateHebrew"></h2>
-        <div class="date-tags" id="dateTags"></div>
+  <!-- ===== ZMANIM TAB ===== -->
+  <div id="zmanim-tab" class="tab-content active">
+    <div class="date-hero" id="date-hero"></div>
+    <div class="zmanim-grid">
+      <div class="zmanim-card">
+        <h3>&#x1F305; Morning Times</h3>
+        <div id="morning-times"></div>
       </div>
-      <div class="next-zman" id="nextZman">
-        <span class="next-label">NEXT HALACHIC DEADLINE</span>
-        <span class="next-time" id="nextZmanTime"></span>
+      <div class="zmanim-card">
+        <h3>&#x1F307; Afternoon & Evening Times</h3>
+        <div id="evening-times"></div>
       </div>
-    </section>
-
-    <section class="zmanim-grid">
-      <div class="zmanim-card" id="morningTimes">
-        <h3 class="card-title">&#9788; Morning Times</h3>
-        <div class="zman-list" id="morningList"></div>
-      </div>
-      <div class="zmanim-card" id="afternoonTimes">
-        <h3 class="card-title">&#9788; Afternoon & Evening Times</h3>
-        <div class="zman-list" id="afternoonList"></div>
-      </div>
-    </section>
-
-    <section class="davening-section" id="daveningSection">
-      <h3 class="section-title" id="daveningTitle">
-        <span>&#9201;</span>
-        Today's Davening Times / <span class="hebrew-text">&#1494;&#1502;&#1504;&#1497; &#1514;&#1508;&#1497;&#1500;&#1492;</span>
-      </h3>
-      <div class="davening-list" id="daveningList"></div>
-      <div class="shabbos-section" id="shabbosSection">
-        <h4 class="shabbos-title">&#10022; Shabbos Times</h4>
-        <div class="davening-list" id="shabbosList"></div>
-      </div>
-    </section>
-
-    <footer class="footer">
-      <span>Data sourced from KosherJava.com &middot; Zmanim calculated for Lat 41.0903, Lon -74.0484</span>
-      <span class="footer-tagline">Clarity & Precision in Halacha</span>
+    </div>
+    <div class="davening-section" id="davening-section"></div>
+    <footer class="zmanim-footer">
+      <span>Data sourced from KosherJava.com · Zmanim calculated for Lat 41.0903, Lon -74.0484</span>
+      <a href="#">Clarity & Precision in Halacha</a>
     </footer>
-  </main>
+  </div>
 
-  <!-- Calendar Tab -->
-  <main class="content-container hidden" id="calendarTab">
-    <section class="date-hero" id="calDateHero">
-      <div class="date-info">
-        <h2 class="date-english" id="calDateEnglish"></h2>
-        <h2 class="date-hebrew" id="calDateHebrew"></h2>
-        <div class="date-tags" id="calDateTags"></div>
-      </div>
-      <div class="next-zman" id="calNextZman">
-        <span class="next-label">NEXT HALACHIC DEADLINE</span>
-        <span class="next-time" id="calNextZmanTime"></span>
-      </div>
-    </section>
+  <!-- ===== CALENDAR TAB ===== -->
+  <div id="calendar-tab" class="tab-content">
+    <div class="calendar-header">
+      <button class="nav-arrow" onclick="prevMonth()">&#x276E;</button>
+      <h2 id="calendar-month-title"></h2>
+      <button class="nav-arrow" onclick="nextMonth()">&#x276F;</button>
+      <span class="calendar-badge" id="calendar-badge"></span>
+    </div>
+    <div class="days-header" id="days-header"></div>
+    <div class="calendar-grid" id="calendar-grid"></div>
+    <div class="calendar-agenda" id="calendar-agenda"></div>
+  </div>
 
-    <section class="calendar-card" id="calendarCard">
-      <div class="month-nav">
-        <button class="month-arrow" id="monthPrev">&#8249;</button>
-        <h3 class="month-title" id="monthTitle"></h3>
-        <button class="month-arrow" id="monthNext">&#8250;</button>
-        <span class="month-summary" id="monthSummary">Hebrew lunar monthly view</span>
-        <span class="month-days-badge" id="monthDaysBadge"></span>
-      </div>
-      <div class="days-header">
-        <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span class="shabbos-header">Sat</span>
-      </div>
-      <div class="calendar-grid" id="calendarGrid"></div>
-    </section>
+  <!-- ===== NEWSLETTER TAB ===== -->
+  <div id="newsletter-tab" class="tab-content">
+    <div class="nl-controls">
+      <h2>Weekly Shabbos Newsletter Generator <span class="nl-hebrew-title">מחולל עלון שבועי</span></h2>
+      <div class="nl-date-info" id="nl-date-info"></div>
 
-    <footer class="footer">
-      <span>Data sourced from KosherJava.com &middot; Zmanim calculated for Lat 41.0903, Lon -74.0484</span>
-      <span class="footer-tagline">Clarity & Precision in Halacha</span>
-    </footer>
-  </main>
+      <h3>Halachic Schedule & Shiur Overrides</h3>
+      <div class="nl-override-grid">
+        <div class="nl-field">
+          <label>Mincha Erev Shabbos Override</label>
+          <input type="text" id="nl-mincha-override" placeholder="Auto-calculated">
+        </div>
+        <div class="nl-field">
+          <label>Pirkei Avos Chapter Override</label>
+          <input type="text" id="nl-avos-override" placeholder="Auto: פרק א,ב">
+        </div>
+        <div class="nl-field">
+          <label>Shabbos Mincha ב Override</label>
+          <input type="text" id="nl-minchab-override" placeholder="Auto: 6:15 PM">
+        </div>
+        <div class="nl-field">
+          <label>Torah & Stories Time Override</label>
+          <input type="text" id="nl-torahstories-override" placeholder="Auto: 9:45 AM">
+        </div>
+        <div class="nl-field">
+          <label>Shiur Topic Override</label>
+          <input type="text" id="nl-shiur-topic" placeholder="Enter shiur topic...">
+        </div>
+        <div class="nl-field">
+          <label>Avos UBanim Time Override</label>
+          <input type="text" id="nl-avosubanim-override" placeholder="Auto-calculated">
+        </div>
+        <div class="nl-field">
+          <label>Nightly Maariv Time Override</label>
+          <input type="text" id="nl-maariv-override" placeholder="Auto: 8:30">
+        </div>
+        <div class="nl-field">
+          <label>Special Shiur Override</label>
+          <input type="text" id="nl-special-shiur" placeholder="Enter special shiur or event...">
+        </div>
+      </div>
 
-  <!-- Newsletter Tab -->
-  <main class="content-container hidden" id="newsletterTab">
-    <div class="newsletter-controls no-print">
-      <h3>Weekly Newsletter Generator</h3>
-      <p class="nl-subtitle">Auto-filled for this Shabbos. Edit announcements below, then print.</p>
+      <h3>Announcements & Dedications</h3>
+      <div class="nl-override-grid">
+        <div class="nl-field">
+          <label>Simcha / Mazel Tov Announcements</label>
+          <textarea id="nl-simcha" rows="3" placeholder="e.g., The Simons family invites everyone to a Kiddush..."></textarea>
+        </div>
+        <div class="nl-field">
+          <label>General Announcements</label>
+          <textarea id="nl-announcements" rows="3" placeholder="e.g., Beginning this week, the 2nd Mincha on Friday..."></textarea>
+        </div>
+        <div class="nl-field">
+          <label>Sponsor Dedications</label>
+          <textarea id="nl-sponsors" rows="3" placeholder="e.g., Sponsored by the Moeller family in honor of..."></textarea>
+        </div>
+        <div class="nl-field">
+          <label>Shalosh Seudos Sponsor</label>
+          <textarea id="nl-seudos" rows="3" placeholder="e.g., Sponsored anonymously in honor of..."></textarea>
+        </div>
+      </div>
+
       <div class="nl-actions">
-        <button class="btn-today" id="nlPrint" onclick="window.print()">&#128424; Print Newsletter</button>
-        <button class="btn-secondary" id="nlReset">Reset to Defaults</button>
+        <button class="nl-btn-primary" onclick="renderNewsletter()">Generate Preview</button>
+        <button class="nl-btn-secondary" onclick="printNewsletter()">Print Newsletter (PDF)</button>
+        <button class="nl-btn-tertiary" onclick="saveNewsletterDraft()">Save Draft</button>
       </div>
     </div>
 
-    <!-- Editable Overrides -->
-    <div class="nl-overrides no-print" id="nlOverrides">
-      <h4>Schedule Overrides</h4>
-      <div class="override-grid">
-        <label>Shabbos Shachris: <input type="text" id="ovShachris" placeholder="8:30"></label>
-        <label>Shabbos Mincha B: <input type="text" id="ovMinchaB" placeholder="auto"></label>
-        <label>Shiur Time: <input type="text" id="ovShiur" placeholder="auto (Mincha-30)"></label>
-        <label>Erev Shabbos Mincha adj: <input type="text" id="ovErevMincha" placeholder="auto"></label>
-      </div>
-      <h4>Announcements</h4>
-      <div class="announce-grid">
-        <label>Alert Box: <textarea id="annAlert" rows="2" placeholder="e.g. Beginning this week, Mincha on Friday will be 15 minutes before Shkia."></textarea></label>
-        <label>Likras Shabbos Sponsor: <textarea id="annLikras" rows="2" placeholder="Sponsored anonymously&#10;&#1500;&#1494;&#1499;&#1493;&#1514; &#1512;&#1508;&#1493;&#1488;&#1492; &#1513;&#1500;&#1497;&#1502;&#1492;"></textarea></label>
-        <label>Mazal Tov: <textarea id="annMazalTov" rows="3" placeholder="The Simons family invites everyone to a kiddush..."></textarea></label>
-        <label>Shabbos Afternoon Shiur Topic: <textarea id="annShiurTopic" rows="2" placeholder="Can one wash his hands for bread in the bathroom sink?"></textarea></label>
-        <label>Torah & Stories / Special Programs: <textarea id="annTorah" rows="2" placeholder="For boys under Bar Mitzvah&#10;Shabbos morning 9:45"></textarea></label>
-        <label>Friday Night Oneg/Shiur: <textarea id="annFridayNight" rows="2" placeholder="Leave blank if none"></textarea></label>
-        <label>Shalosh Seudos Sponsor: <textarea id="annShalosh" rows="2" placeholder="Leave blank if none"></textarea></label>
-        <label>Avos Ubanim Sponsor: <textarea id="annAvos" rows="2" placeholder="Leave blank if none"></textarea></label>
-        <label>Additional Maariv: <input type="text" id="annMaariv" placeholder="e.g. 8:30"></label>
-        <label>Special Shiur/Program: <textarea id="annSpecial" rows="2" placeholder="Leave blank if none"></textarea></label>
-        <label>Extra Content: <textarea id="annExtra" rows="3" placeholder="Any additional content for the bulletin"></textarea></label>
+    <div class="nl-preview-wrapper">
+      <h3>Live Print Preview <span class="nl-preview-badge">Draft Preview</span></h3>
+      <p class="nl-preview-note">Standard US Letter Size 8.5" × 11" Printable Layout</p>
+      <div class="nl-page" id="nl-page">
+        <div class="nl-placeholder">Click "Generate Preview" to build the newsletter</div>
       </div>
     </div>
-
-    <!-- Print Preview -->
-    <div class="newsletter-preview" id="newsletterPreview">
-      <!-- Dynamically filled by JS -->
-    </div>
-
-    <footer class="footer no-print">
-      <span>Data sourced from KosherJava.com &middot; Zmanim calculated for Lat 41.0903, Lon -74.0484</span>
-      <span class="footer-tagline">Clarity & Precision in Halacha</span>
-    </footer>
-  </main>
+  </div>
 
   <script src="app.js"></script>
 </body>
