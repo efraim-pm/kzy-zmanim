@@ -1,189 +1,530 @@
+/* ===== Reset & Base ===== */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 body {
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: 'Inter', sans-serif;
   background: #F8F6F1;
-  color: #1B2A4A;
-  line-height: 1.5;
+  color: #333;
+  min-height: 100vh;
 }
-.hidden { display: none !important; }
 
+/* ===== Header with Shul Photo ===== */
 .site-header {
-  background: #1B2A4A;
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  position: relative;
+  height: 160px;
+  overflow: hidden;
+}
+.header-bg {
+  position: absolute; inset: 0;
+  background: url('shul-photo.jpg') center 28% / cover no-repeat;
+  background-color: #1B2A4A;
+}
+.header-gradient {
+  position: absolute; inset: 0;
+  background: linear-gradient(to right,
+    rgba(27,42,74,0.92) 0%,
+    rgba(27,42,74,0.70) 45%,
+    rgba(27,42,74,0.35) 100%
+  );
+}
+.header-content {
+  position: relative; z-index: 1;
+  max-width: 1440px; margin: 0 auto;
+  height: 100%;
+  display: flex; align-items: center; justify-content: space-between;
   padding: 0 80px;
-  height: 96px;
 }
-.brand { display: flex; align-items: center; gap: 16px; }
-.brand-icon {
-  width: 48px; height: 48px;
-  background: rgba(201,168,76,0.2);
-  border-radius: 50%;
-  display: grid; place-items: center;
-  font-size: 24px; color: #C9A84C;
+.brand-section { display: flex; align-items: center; gap: 16px; }
+.logo-badge {
+  width: 52px; height: 52px;
+  background: #C9A84C; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; color: #fff;
 }
-.brand-title { font-size: 22px; font-weight: 700; }
-.brand-subtitle { font-size: 13px; opacity: 0.7; }
-.nav-controls { display: flex; gap: 8px; align-items: center; }
+.site-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 24px; font-weight: 700; color: #fff;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.4);
+}
+.site-subtitle {
+  font-size: 12px; color: rgba(255,255,255,0.85);
+  text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+.location-dot { color: #C9A84C; margin-right: 4px; }
+.nav-controls { display: flex; align-items: center; gap: 12px; }
 .btn-today {
   background: #C9A84C; color: #fff; border: none;
-  padding: 8px 20px; border-radius: 8px; font-weight: 600;
-  cursor: pointer; font-size: 14px;
+  padding: 8px 20px; border-radius: 6px;
+  font-weight: 600; font-size: 13px; cursor: pointer;
 }
-.btn-today:hover { background: #b8943f; }
-.btn-nav {
-  width: 36px; height: 36px; border-radius: 8px;
-  border: 1px solid rgba(255,255,255,0.3);
-  background: transparent; color: #fff;
-  font-size: 20px; cursor: pointer;
-  display: grid; place-items: center;
+.btn-today:hover { background: #b8963e; }
+.btn-secondary {
+  background: #fff; color: #1B2A4A; border: 1px solid #E8E4DD;
+  padding: 8px 20px; border-radius: 6px;
+  font-weight: 500; font-size: 13px; cursor: pointer;
 }
-.btn-nav:hover { background: rgba(255,255,255,0.1); }
+.btn-secondary:hover { background: #F8F6F1; }
+.arrow-nav { display: flex; gap: 4px; }
+.arrow-btn {
+  width: 36px; height: 36px;
+  background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 6px; color: #fff; font-size: 20px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+}
+.arrow-btn:hover { background: rgba(255,255,255,0.25); }
 
+/* ===== Tab Bar ===== */
 .tab-bar {
-  background: #fff;
-  border-bottom: 1px solid #EADDC9;
-  padding: 0 80px;
+  max-width: 1440px; margin: 0 auto;
   display: flex; gap: 0;
+  border-bottom: 2px solid #E8E4DD;
+  padding: 0 80px;
+  background: #fff;
 }
 .tab {
-  padding: 16px 24px; border: none; background: none;
-  font-size: 15px; font-weight: 500; color: #6B7280;
-  cursor: pointer; border-bottom: 3px solid transparent;
-  transition: all 0.2s;
+  padding: 14px 24px; border: none; background: none;
+  font-size: 14px; font-weight: 500; color: #888; cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px; transition: all 0.2s;
 }
-.tab.active { color: #C9A84C; border-bottom-color: #C9A84C; font-weight: 600; }
+.tab.active { color: #1B2A4A; border-bottom-color: #C9A84C; font-weight: 600; }
 .tab:hover { color: #1B2A4A; }
 
-.content { max-width: 1440px; margin: 0 auto; padding: 32px 120px 48px; }
+/* ===== Content ===== */
+.content-container {
+  max-width: 1440px; margin: 0 auto;
+  padding: 30px 120px 40px;
+}
+.content-container.hidden { display: none; }
 
+/* ===== Date Hero ===== */
 .date-hero {
-  background: #fff;
-  border-radius: 16px;
-  padding: 28px 40px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  background: #fff; border-radius: 12px;
+  padding: 28px 36px;
+  display: flex; justify-content: space-between; align-items: flex-start;
   margin-bottom: 24px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
 }
-.gregorian-hebrew-date {
+.date-english {
   font-family: 'Cormorant Garamond', serif;
-  font-size: 28px; font-weight: 700; line-height: 1.3;
+  font-size: 28px; font-weight: 600; color: #1B2A4A;
+  line-height: 1.2;
 }
-.date-tags { display: flex; gap: 12px; margin-top: 12px; flex-wrap: wrap; }
+.date-hebrew {
+  font-size: 32px; font-weight: 700; color: #1B2A4A;
+  margin-top: 4px;
+}
+.date-tags { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
 .tag {
-  font-size: 12px; padding: 4px 14px; border-radius: 999px;
-  font-weight: 500;
+  padding: 4px 12px; border-radius: 20px;
+  font-size: 12px; font-weight: 500;
 }
-.tag-parasha { background: #F0E6D0; color: #8B6914; }
-.tag-daf { background: #E8EDF7; color: #3B5998; border: 1px solid #D0D8EC; }
-.deadline-box { text-align: right; }
-.deadline-label { display: block; font-size: 11px; font-weight: 600; color: #6B7280; letter-spacing: 0.5px; }
-.deadline-value { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 700; color: #C9A84C; }
+.tag-parasha { background: #C9A84C; color: #fff; }
+.tag-dafyomi { background: #fff; color: #1B2A4A; border: 1px solid #E8E4DD; }
+.tag-holiday { background: #C9A84C; color: #fff; }
+.next-zman { text-align: right; }
+.next-label { display: block; font-size: 10px; color: #888; letter-spacing: 0.5px; text-transform: uppercase; }
+.next-time { font-size: 18px; font-weight: 700; color: #C9A84C; }
 
-.zmanim-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
-.zman-card, .davening-card {
-  background: #fff; border-radius: 16px; padding: 28px 32px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+/* ===== Zmanim Cards ===== */
+.zmanim-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 24px;
+  margin-bottom: 24px;
 }
-.davening-card { margin-bottom: 24px; }
+.zmanim-card {
+  background: #fff; border-radius: 12px; padding: 24px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
 .card-title {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 20px; font-weight: 600; margin-bottom: 20px;
-  padding-bottom: 12px; border-bottom: 1px solid #F0ECE3;
+  font-size: 16px; font-weight: 600; color: #1B2A4A;
+  margin-bottom: 16px; padding-bottom: 8px;
+  border-bottom: 1px solid #F0ECE4;
 }
-
-.zman-list { list-style: none; }
 .zman-row {
   display: flex; justify-content: space-between; align-items: flex-start;
-  padding: 10px 0; border-bottom: 1px solid #F5F1EA;
+  padding: 8px 0; border-bottom: 1px solid #FAFAF7;
 }
 .zman-row:last-child { border-bottom: none; }
-.zman-row.highlight {
-  background: rgba(201,168,76,0.08);
-  margin: 0 -16px; padding: 10px 16px;
-  border-radius: 8px; border: 1px solid rgba(201,168,76,0.25);
+.zman-row.highlighted {
+  background: #FFF8E7; margin: 0 -12px; padding: 8px 12px;
+  border-radius: 6px; border-bottom-color: transparent;
 }
-.zman-label { display: flex; align-items: baseline; gap: 8px; }
-.zman-english { font-size: 14px; font-weight: 500; }
-.zman-hebrew { font-size: 14px; font-weight: 600; color: #C9A84C; }
-.zman-desc { font-size: 11px; color: #9CA3AF; margin-top: 2px; }
-.zman-time { font-size: 15px; font-weight: 700; white-space: nowrap; }
-.zman-info { flex: 1; min-width: 0; }
+.zman-names { flex: 1; }
+.zman-english { font-size: 13px; font-weight: 500; color: #333; }
+.zman-hebrew { font-size: 14px; color: #C9A84C; font-weight: 500; display: inline; margin-left: 8px; }
+.zman-desc { font-size: 11px; color: #999; margin-top: 2px; }
+.zman-time { font-size: 15px; font-weight: 600; color: #333; white-space: nowrap; }
 
-.shabbos-divider { height: 1px; background: #E5DFD3; margin: 20px 0; }
-.shabbos-header {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 18px; font-weight: 600; margin-bottom: 16px;
+/* ===== Davening Section ===== */
+.davening-section {
+  background: #fff; border-radius: 12px; padding: 24px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  margin-bottom: 24px;
+}
+.section-title {
+  font-size: 16px; font-weight: 600; color: #1B2A4A;
+  margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
+}
+.section-title .hebrew-text { font-size: 18px; }
+.davening-row {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  padding: 10px 0; border-bottom: 1px solid #FAFAF7;
+}
+.davening-row:last-child { border-bottom: none; }
+.davening-row.highlighted {
+  background: #FFF8E7; margin: 0 -12px; padding: 10px 12px;
+  border-radius: 6px;
+}
+.davening-row.shkiah-row {
+  background: #FFF5E0; margin: 0 -12px; padding: 10px 12px;
+  border-radius: 6px;
+}
+.davening-names { flex: 1; }
+.davening-english { font-size: 14px; font-weight: 500; color: #333; }
+.davening-hebrew { font-size: 16px; color: #C9A84C; font-weight: 500; display: inline; margin-left: 6px; }
+.davening-note { font-size: 12px; color: #999; margin-top: 2px; }
+.davening-time { font-size: 15px; font-weight: 600; color: #333; white-space: nowrap; }
+.davening-time.new-time { color: #C9A84C; font-weight: 700; }
+
+.shabbos-section { margin-top: 20px; padding-top: 16px; border-top: 2px solid #F0ECE4; }
+.shabbos-title {
+  font-size: 15px; font-weight: 600; color: #1B2A4A;
+  margin-bottom: 12px;
 }
 
+/* ===== Calendar Card ===== */
 .calendar-card {
-  background: #fff; border-radius: 16px; padding: 28px 32px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.06); margin-bottom: 24px;
+  background: #fff; border-radius: 12px; padding: 24px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  margin-bottom: 24px;
 }
-.calendar-header {
-  display: flex; align-items: center; gap: 16px; margin-bottom: 24px;
+.month-nav {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 16px;
 }
-.calendar-header .btn-nav { color: #1B2A4A; border-color: #D1C9B8; }
 .month-title {
+  font-size: 18px; font-weight: 600; color: #1B2A4A;
   font-family: 'Cormorant Garamond', serif;
-  font-size: 22px; font-weight: 700;
 }
-.calendar-mode-label { margin-left: auto; font-size: 13px; color: #9CA3AF; }
-.calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
-.cal-day-header {
-  text-align: center; font-size: 13px; font-weight: 600;
-  color: #6B7280; padding: 8px 0;
+.month-arrow {
+  background: none; border: 1px solid #E8E4DD;
+  width: 28px; height: 28px; border-radius: 6px;
+  font-size: 18px; cursor: pointer; color: #666;
+  display: flex; align-items: center; justify-content: center;
 }
-.cal-day-header.shabbos { color: #C9A84C; }
+.month-arrow:hover { background: #F8F6F1; }
+.month-summary { margin-left: auto; font-size: 12px; color: #888; }
+.month-days-badge {
+  background: #C9A84C; color: #fff; padding: 2px 10px;
+  border-radius: 12px; font-size: 11px; font-weight: 600;
+}
 
-.cal-cell {
-  border: 1px solid #EADDC9; border-radius: 10px;
-  padding: 8px; min-height: 120px;
-  display: flex; flex-direction: column; gap: 4px;
-  font-size: 10px; color: #4B5563;
+/* Days Header */
+.days-header {
+  display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px;
+  margin-bottom: 4px;
+}
+.days-header span {
+  text-align: center; font-size: 11px; font-weight: 600;
+  color: #888; padding: 8px 0;
+  text-transform: uppercase;
+}
+.shabbos-header { color: #1B2A4A !important; }
+
+/* Calendar Grid */
+.calendar-grid {
+  display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px;
+}
+.day-cell {
+  border: 0.5px solid #DDD9D0;
+  border-radius: 6px;
+  padding: 5px 6px;
+  min-height: 155px;
+  display: flex; flex-direction: column;
+  font-size: 8px;
+  overflow: hidden;
+}
+.day-cell.empty { background: #FCFBF9; border-color: #EDEAE4; }
+.day-cell.shabbos { background: #FDFCF8; }
+.day-cell.yomtov { background: #FFF9EC; border-color: #E8D9A8; }
+.day-cell.today { border: 2px solid #C9A84C; }
+
+/* Cell Header */
+.cell-header {
+  font-size: 9px; font-weight: 600; color: #333;
+  line-height: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cell-header.special { color: #A67C1A; }
+.cell-divider {
+  height: 0.5px;
+  background: #DDD9D0;
+  margin: 2px 0 3px;
+  flex-shrink: 0;
+}
+
+/* Cell Davening Lines */
+.cell-times {
+  flex: 1;
+  display: flex; flex-direction: column;
+  gap: 0;
+  overflow: hidden;
+}
+.cell-time-line {
+  font-size: 8px;
+  line-height: 12px;
+  color: #444;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cell-time-line.shkiah { color: #A67C1A; font-weight: 500; }
+.cell-time-line.new-highlight { color: #B38A18; font-weight: 600; }
+
+/* ===== Mobile Agenda View ===== */
+.calendar-agenda {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.agenda-card {
+  display: flex;
+  align-items: stretch;
+  padding: 12px 16px;
+  border-bottom: 1px solid #E8E4DD;
   background: #fff;
+  gap: 16px;
 }
-.cal-cell.empty { border-color: transparent; background: transparent; min-height: 0; }
-.cal-cell.shabbos { background: #F7F3E8; border-color: #C9A84C; }
-.cal-cell.yomtov { background: #F7F3E8; border-color: #C9A84C; }
-.cal-cell.erev { background: #FBF8F0; border-color: #D4C48A; }
-.cal-cell.today { border: 2px solid #C9A84C; box-shadow: 0 0 0 2px rgba(201,168,76,0.2); }
+.agenda-card.agenda-shabbos { background: #FDFCF5; }
+.agenda-card.agenda-today { border-left: 3px solid #C9A84C; }
+.agenda-date {
+  min-width: 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.agenda-heb-day { font-size: 20px; font-weight: 700; color: #1B2A4A; line-height: 1.2; }
+.agenda-eng-date { font-size: 12px; color: #666; }
+.agenda-dow { font-size: 11px; color: #888; font-weight: 500; }
+.agenda-special { font-size: 11px; font-weight: 600; color: #C9A84C; margin-top: 2px; }
+.agenda-times {
+  flex: 1;
+  display: flex; flex-direction: column;
+  gap: 2px; justify-content: center;
+}
+.agenda-time { font-size: 12px; line-height: 1.5; color: #444; display: block; }
+.agenda-time.shkiah { color: #A67C1A; font-weight: 600; }
+.agenda-time.new-highlight { color: #B38A18; font-weight: 600; }
 
-.cal-date-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
-.cal-hebrew-date {
+/* ===== Newsletter Controls ===== */
+.newsletter-controls {
+  background: #fff; border-radius: 12px; padding: 24px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  margin-bottom: 20px;
+}
+.newsletter-controls h3 {
   font-family: 'Cormorant Garamond', serif;
-  font-size: 18px; font-weight: 700; color: #1B2A4A;
+  font-size: 22px; font-weight: 700; color: #1B2A4A;
 }
-.cal-greg-date { font-size: 10px; color: #9CA3AF; }
-.cal-holiday-tag {
-  font-size: 8px; font-weight: 600; color: #C9A84C;
-  background: rgba(201,168,76,0.15); padding: 1px 6px;
-  border-radius: 999px; white-space: nowrap;
-}
-.cal-times { font-size: 9px; color: #6B7280; line-height: 1.5; }
-.cal-times div { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nl-subtitle { font-size: 13px; color: #888; margin-top: 4px; }
+.nl-actions { display: flex; gap: 12px; margin-top: 16px; }
 
-.site-footer {
+.nl-overrides {
+  background: #fff; border-radius: 12px; padding: 24px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  margin-bottom: 24px;
+}
+.nl-overrides h4 {
+  font-size: 14px; font-weight: 600; color: #1B2A4A;
+  margin-bottom: 12px; margin-top: 16px;
+}
+.nl-overrides h4:first-child { margin-top: 0; }
+.override-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.announce-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.nl-overrides label {
+  display: flex; flex-direction: column; gap: 4px;
+  font-size: 12px; font-weight: 500; color: #666;
+}
+.nl-overrides input, .nl-overrides textarea {
+  border: 1px solid #E8E4DD; border-radius: 6px;
+  padding: 8px 10px; font-size: 13px; font-family: 'Inter', sans-serif;
+  color: #333; resize: vertical;
+}
+.nl-overrides input:focus, .nl-overrides textarea:focus {
+  outline: none; border-color: #C9A84C;
+}
+
+/* ===== Newsletter Preview (Print Layout) ===== */
+.newsletter-preview {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  overflow: hidden;
+  aspect-ratio: 8.5 / 11;
+  max-width: 850px;
+  margin: 0 auto;
+  padding: 0;
+}
+.nl-page {
+  width: 100%; height: 100%;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  font-size: 11px;
+  color: #222;
+  position: relative;
+  background: linear-gradient(135deg, #f7f4ef 0%, #fff 30%, #f5f2ec 70%, #faf8f4 100%);
+}
+
+/* Newsletter Header */
+.nl-header {
+  display: grid;
+  grid-template-columns: 80px 1fr auto;
+  align-items: center;
+  padding: 20px 28px 14px;
+  border-bottom: 2px solid #C9A84C;
+  gap: 16px;
+}
+.nl-logo {
+  width: 70px; height: auto;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 11px; font-weight: 700; color: #1B2A4A;
+  text-align: center; line-height: 1.2;
+}
+.nl-logo-text { font-size: 22px; }
+.nl-parsha {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 32px; font-weight: 700; color: #1B2A4A;
+  text-align: center;
+  direction: rtl;
+}
+.nl-date-block {
+  text-align: right;
+  font-size: 12px; color: #555;
+  line-height: 1.5;
+}
+.nl-date-hebrew { font-size: 13px; font-weight: 600; }
+
+/* Newsletter Body */
+.nl-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0; padding: 0;
+}
+
+/* Left Column - Announcements */
+.nl-left {
+  padding: 16px 20px;
+  border-right: 1px solid #E8E4DD;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.nl-alert-box {
+  background: #fff;
+  border: 2px solid #1B2A4A;
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-weight: 600;
+  font-size: 11px;
+  line-height: 1.4;
+  text-align: center;
+}
+.nl-section-block { text-align: center; line-height: 1.5; }
+.nl-section-title { font-weight: 700; font-size: 12px; margin-bottom: 2px; }
+.nl-section-hebrew { font-size: 18px; font-weight: 700; }
+.nl-section-body { font-size: 10.5px; color: #444; white-space: pre-line; }
+.nl-divider { width: 40px; height: 1px; background: #999; margin: 2px auto; }
+
+/* Right Column - Schedule */
+.nl-right { padding: 12px 20px; }
+.nl-schedule-table {
+  width: 100%; border-collapse: collapse; direction: rtl;
+}
+.nl-schedule-table td {
+  padding: 2px 4px; font-size: 11px;
+  border-bottom: 0.5px solid #E8E4DD;
+  vertical-align: middle;
+}
+.nl-schedule-table td:first-child { text-align: right; font-weight: 500; }
+.nl-schedule-table td:last-child { text-align: left; font-weight: 400; direction: ltr; }
+.nl-schedule-table tr.bold-row td { font-weight: 700; font-size: 12px; }
+.nl-schedule-table tr.section-break td { border-bottom: 2px solid #333; }
+.nl-schedule-table tr.no-border td { border-bottom: none; }
+
+/* Weekday Summary */
+.nl-weekday-table {
+  width: 100%; border-collapse: collapse;
+  margin-top: 8px; font-size: 10.5px;
+}
+.nl-weekday-table td { padding: 2px 4px; border-bottom: 0.5px solid #E8E4DD; }
+.nl-weekday-table .wk-label { font-weight: 600; width: 80px; text-align: right; direction: rtl; }
+.nl-weekday-table .wk-days { width: 90px; }
+.nl-weekday-header { font-size: 11px; font-weight: 600; padding: 4px 0 2px; }
+
+/* Newsletter Footer */
+.nl-footer {
+  padding: 8px 28px 12px;
+  border-top: 1px solid #E8E4DD;
+  display: flex; justify-content: space-between; align-items: flex-end;
+  font-size: 10px; color: #666;
+}
+.nl-footer-left { line-height: 1.5; }
+
+/* ===== Footer ===== */
+.footer {
   display: flex; justify-content: space-between; align-items: center;
-  padding: 16px 0; font-size: 12px; color: #9CA3AF;
+  padding: 16px 0;
+  font-size: 11px; color: #999;
+  border-top: 1px solid #EDEAE4;
 }
-.site-footer a { color: #C9A84C; text-decoration: none; }
-.site-footer a:hover { text-decoration: underline; }
+.footer-tagline {
+  color: #C9A84C; font-style: italic;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 13px;
+}
 
+/* ===== Print Styles ===== */
+@media print {
+  body { background: #fff; }
+  .site-header, .tab-bar, .no-print, .footer { display: none !important; }
+  .content-container { padding: 0; max-width: none; }
+  .content-container.hidden { display: none !important; }
+  #newsletterTab { display: block !important; }
+  #zmanimTab, #calendarTab { display: none !important; }
+  .newsletter-preview { box-shadow: none; border-radius: 0; max-width: none; aspect-ratio: auto; }
+  .nl-page {
+    min-height: 100vh;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+
+/* ===== Responsive ===== */
 @media (max-width: 1024px) {
-  .site-header { padding: 0 24px; }
-  .tab-bar { padding: 0 24px; }
-  .content { padding: 24px; }
+  .header-content { padding: 0 40px; }
+  .tab-bar { padding: 0 40px; }
+  .content-container { padding: 24px 40px 32px; }
   .zmanim-grid { grid-template-columns: 1fr; }
+  .override-grid, .announce-grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 768px) {
-  .site-header { height: auto; padding: 16px 20px; flex-direction: column; gap: 12px; }
+  .site-header { height: 120px; }
+  .header-content { padding: 0 20px; }
+  .site-title { font-size: 18px; }
+  .tab-bar { padding: 0 20px; }
+  .content-container { padding: 16px 16px 24px; }
   .date-hero { flex-direction: column; gap: 16px; }
-  .deadline-box { text-align: left; }
-  .cal-cell { min-height: 90px; padding: 6px; }
-  .cal-hebrew-date { font-size: 14px; }
+  .next-zman { text-align: left; }
+  .date-english { font-size: 22px; }
+  .date-hebrew { font-size: 26px; }
+  /* Hide desktop grid elements on mobile - agenda takes over */
+  .days-header { display: none; }
+  .month-summary { display: none; }
+  /* Newsletter adjustments */
+  .newsletter-preview { aspect-ratio: auto; }
+  .nl-body { grid-template-columns: 1fr; }
+  .nl-left { border-right: none; border-bottom: 1px solid #E8E4DD; }
+  .nl-header { grid-template-columns: 60px 1fr; }
+  .nl-date-block { grid-column: 1 / -1; text-align: center; }
+  .nl-parsha { font-size: 24px; }
 }
