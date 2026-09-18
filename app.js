@@ -1,19 +1,32 @@
 /* ============================================================
    Jewish Calendar & Zmanim — Kehel Zichron Yaakov
    Chestnut Ridge, NY
-   Matches KosherJava NOAA Calculator exactly
+   NOAA Calculator matches KosherJava exactly
    ============================================================ */
 
 // ===== CONFIG =====
 const CONFIG = {
   lat: 41.0903,
   lon: -74.0484,
-  elevation: 141, // meters
+  elevation: 141,
   tzid: 'America/New_York',
   shulName: 'Kehel Zichron Yaakov',
   shulNameHe: 'קהל זכרון יעקב',
   ravName: 'Rabbi Dovid Simons',
   address: '4 Red Schoolhouse Rd, Chestnut Ridge, NY 10977',
+  // Major legal holidays (month 0-indexed, day 1-indexed)
+  majorHolidays: [
+    { m: 0, d: 1 },   // New Year's Day
+    { m: 4, d: -1, dow: 1, week: 'last' }, // Memorial Day (last Mon in May)
+    { m: 6, d: 4 },   // July 4th
+    { m: 8, d: -1, dow: 1, week: 'first' }, // Labor Day (first Mon in Sep)
+    { m: 10, d: -1, dow: 4, week: 'fourth' }, // Thanksgiving
+    { m: 11, d: 25 }, // Christmas
+  ],
+  // Bein Hazmanim ranges (manually configured) — [start, end] inclusive
+  beinHazmanim: [
+    // Example: ['2026-07-01', '2026-07-21'],
+  ],
 };
 
 // ===== STATE =====
@@ -52,7 +65,6 @@ function switchTab(tab) {
 // LOCAL NOAA SOLAR CALCULATOR (matches KosherJava exactly)
 // ============================================================
 
-// Midnight-based Julian Day — matches KosherJava's getJulianDay()
 function toJulianDay(date) {
   let y = date.getFullYear();
   let m = date.getMonth() + 1;
@@ -67,7 +79,6 @@ function toJulianCenturies(jd) {
   return (jd - 2451545.0) / 36525.0;
 }
 
-// Solar noon using actual JD — matches KosherJava's getSolarNoonUTC()
 function solarNoonUTC(jd, lon) {
   const tnoon = toJulianCenturies(jd + (-lon / 360));
   let eqTime = eqOfTime(tnoon);
@@ -147,20 +158,13 @@ function hourAngleForAngle(lat, decl, angle) {
   return radToDeg(Math.acos(cosHA));
 }
 
-function elevationAdjustment(elevation) {
-  const earthRadius = 6356900;
-  return radToDeg(Math.acos(earthRadius / (earthRadius + elevation)));
-}
+// ============================================================
+// ZMANIM ENGINE
+// ============================================================
 
-/**
- * Get all zmanim for a given date.
- * Sunrise/sunset at SEA LEVEL (0.833°) — matches KosherJava maps.
- */
 function getZmanim(date) {
   const jd = toJulianDay(date);
-  const tz = getTimezoneOffset(date);
-
-  // Sea level zenith (standard refraction only, NO elevation adjustment)
+  const tz = date.getTimezoneOffset();
   const seaLevelZenith = 0.833;
 
   function utcToLocal(utcMin) {
@@ -168,7 +172,6 @@ function getZmanim(date) {
     return utcMin - tz;
   }
 
-  // Truncate to minute (Math.floor) — matches KosherJava
   function minutesToDate(min) {
     if (min === null || isNaN(min)) return null;
     const d = new Date(date);
@@ -177,58 +180,31 @@ function getZmanim(date) {
     return d;
   }
 
-  // Sea level sunrise & sunset
   const sunriseMin = utcToLocal(sunriseUTCForAngle(jd, CONFIG.lat, CONFIG.lon, seaLevelZenith, true));
   const sunsetMin = utcToLocal(sunriseUTCForAngle(jd, CONFIG.lat, CONFIG.lon, seaLevelZenith, false));
   const noonMin = utcToLocal(solarNoonUTC(jd, CONFIG.lon));
-
-  // Alos Hashachar — 16.1° below horizon
   const alosMin = utcToLocal(sunriseUTCForAngle(jd, CONFIG.lat, CONFIG.lon, 16.1, true));
-
-  // Misheyakir — 11° below horizon
   const misheyakirMin = utcToLocal(sunriseUTCForAngle(jd, CONFIG.lat, CONFIG.lon, 11, true));
+  const tzeisMin = utcToLocal(sunriseUTCForAngle(jd, CONFIG.lat, CONFIG.lon, 8.5, false));
 
-  // GRA shaos zmanios (sea level sunrise to sea level sunset)
   const dayLengthMin = (sunsetMin !== null && sunriseMin !== null) ? sunsetMin - sunriseMin : null;
   const shaahGRA = dayLengthMin !== null ? dayLengthMin / 12 : null;
 
-  // MGA 72-minute shaos zmanios
   const alos72Min = sunriseMin !== null ? sunriseMin - 72 : null;
   const tzeis72DeriveMin = sunsetMin !== null ? sunsetMin + 72 : null;
   const dayLengthMGA = (tzeis72DeriveMin !== null && alos72Min !== null) ? tzeis72DeriveMin - alos72Min : null;
   const shaahMGA = dayLengthMGA !== null ? dayLengthMGA / 12 : null;
 
-  // Sof Zman Shema
   const shemaGraMin = (sunriseMin !== null && shaahGRA !== null) ? sunriseMin + 3 * shaahGRA : null;
   const shemaMGAMin = (alos72Min !== null && shaahMGA !== null) ? alos72Min + 3 * shaahMGA : null;
-
-  // Sof Zman Tefilla
   const tefillaGraMin = (sunriseMin !== null && shaahGRA !== null) ? sunriseMin + 4 * shaahGRA : null;
   const tefillaMGAMin = (alos72Min !== null && shaahMGA !== null) ? alos72Min + 4 * shaahMGA : null;
-
-  // Chatzos — astronomical solar noon
   const chatzosMin = noonMin;
-
-  // Mincha Gedola GRA — chatzos + 30 fixed minutes (matches KosherJava maps)
   const minchaGedolaMin = chatzosMin !== null ? chatzosMin + 30 : null;
-
-  // Mincha Ketana — sunrise + 9.5 shaos GRA
   const minchaKetanaMin = (sunriseMin !== null && shaahGRA !== null) ? sunriseMin + 9.5 * shaahGRA : null;
-
-  // Plag HaMincha GRA — sunrise + 10.75 shaos
   const plagMin = (sunriseMin !== null && shaahGRA !== null) ? sunriseMin + 10.75 * shaahGRA : null;
-
-  // Shkiah (sea level sunset)
-  const shkiahMin = sunsetMin;
-
-  // Tzeis — 8.5° below horizon
-  const tzeisMin = utcToLocal(sunriseUTCForAngle(jd, CONFIG.lat, CONFIG.lon, 8.5, false));
-
-  // Tzeis 72 — 72 minutes after sea level sunset
-  const tzeis72Min = sunsetMin !== null ? sunsetMin + 72 : null;
-
-  // Candle lighting — 18 minutes before sea level sunset
   const candleLightingMin = sunsetMin !== null ? sunsetMin - 18 : null;
+  const tzeis72Min = sunsetMin !== null ? sunsetMin + 72 : null;
 
   return {
     alos: minutesToDate(alosMin),
@@ -242,19 +218,24 @@ function getZmanim(date) {
     minchaGedola: minutesToDate(minchaGedolaMin),
     minchaKetana: minutesToDate(minchaKetanaMin),
     plag: minutesToDate(plagMin),
-    shkiah: minutesToDate(shkiahMin),
+    shkiah: minutesToDate(sunsetMin),
     tzeis: minutesToDate(tzeisMin),
     tzeis72: minutesToDate(tzeis72Min),
     candleLighting: minutesToDate(candleLightingMin),
     shaahZmanis: shaahGRA,
+    // Raw minutes for schedule calculations
+    _sunriseMin: sunriseMin,
+    _sunsetMin: sunsetMin,
+    _minchaGedolaMin: minchaGedolaMin,
+    _plagMin: plagMin,
+    _tzeisMin: tzeisMin !== null ? utcToLocal(sunriseUTCForAngle(jd, CONFIG.lat, CONFIG.lon, 8.5, false)) : null,
   };
 }
 
-function getTimezoneOffset(date) {
-  return date.getTimezoneOffset();
-}
+// ============================================================
+// TIME FORMATTING
+// ============================================================
 
-// ===== TIME FORMATTING (H:MM AM/PM — no seconds) =====
 function fmtTime(date) {
   if (!date) return '--:--';
   let h = date.getHours();
@@ -264,35 +245,430 @@ function fmtTime(date) {
   if (h === 0) h = 12;
   return `${h}:${m.toString().padStart(2, '0')} ${ampm}`;
 }
-function fmtTime24(date) {
+
+function fmtTimeShort(date) {
   if (!date) return '--:--';
-  return `${date.getHours()}:${date.getMinutes().toString().padStart(2, '0')}`;
+  let h = date.getHours();
+  let m = date.getMinutes();
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  if (h > 12) h -= 12;
+  if (h === 0) h = 12;
+  return `${h}:${m.toString().padStart(2, '0')}`;
+}
+
+function roundTo5(minutes) {
+  return Math.round(minutes / 5) * 5;
+}
+
+function minutesToTimeStr(totalMin) {
+  if (totalMin === null || isNaN(totalMin)) return '--:--';
+  let h = Math.floor(totalMin / 60);
+  let m = Math.floor(totalMin % 60);
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  if (h > 12) h -= 12;
+  if (h === 0) h = 12;
+  return `${h}:${m.toString().padStart(2, '0')}`;
 }
 
 // ============================================================
-// HEBREW DATE FUNCTIONS (using Hebcal API for dates/holidays)
+// HELPER: WEEK BOUNDARIES
 // ============================================================
 
-function hebrewYearStr(year) {
-  const letters = {1:'א',2:'ב',3:'ג',4:'ד',5:'ה',6:'ו',7:'ז',8:'ח',9:'ט',10:'י',20:'כ',30:'ל',40:'מ',50:'נ',60:'ס',70:'ע',80:'פ',90:'צ',100:'ק',200:'ר',300:'ש',400:'ת'};
-  let remainder = year % 1000;
-  let str = '';
-  while (remainder >= 100) {
-    if (remainder >= 400) { str += 'ת'; remainder -= 400; }
-    else if (remainder >= 300) { str += 'ש'; remainder -= 300; }
-    else if (remainder >= 200) { str += 'ר'; remainder -= 200; }
-    else { str += 'ק'; remainder -= 100; }
-  }
-  if (remainder >= 10) {
-    if (remainder === 15) { str += 'טו'; remainder = 0; }
-    else if (remainder === 16) { str += 'טז'; remainder = 0; }
-    else { const tens = Math.floor(remainder / 10) * 10; str += letters[tens]; remainder -= tens; }
-  }
-  if (remainder > 0) str += letters[remainder];
-  if (str.length > 1) str = str.slice(0, -1) + '״' + str.slice(-1);
-  else if (str.length === 1) str += '׳';
-  return str;
+function getWeekSunday(date) {
+  const d = new Date(date);
+  d.setDate(d.getDate() - d.getDay());
+  d.setHours(0, 0, 0, 0);
+  return d;
 }
+
+function getWeekDates(date) {
+  const sun = getWeekSunday(date);
+  const days = [];
+  for (let i = 0; i < 6; i++) { // Sun-Fri
+    const d = new Date(sun);
+    d.setDate(d.getDate() + i);
+    days.push(d);
+  }
+  return days;
+}
+
+// ============================================================
+// MAJOR HOLIDAY DETECTION
+// ============================================================
+
+function isMajorUSHoliday(date) {
+  const m = date.getMonth();
+  const d = date.getDate();
+  const dow = date.getDay();
+  if (m === 0 && d === 1) return true; // New Year's
+  if (m === 6 && d === 4) return true; // July 4th
+  if (m === 11 && d === 25) return true; // Christmas
+  // Memorial Day — last Monday in May
+  if (m === 4 && dow === 1 && d > 24) return true;
+  // Labor Day — first Monday in Sep
+  if (m === 8 && dow === 1 && d <= 7) return true;
+  // Thanksgiving — fourth Thursday in Nov
+  if (m === 10 && dow === 4 && d >= 22 && d <= 28) return true;
+  return false;
+}
+
+function isBeinHazmanim(date) {
+  const dateStr = date.toISOString().split('T')[0];
+  return CONFIG.beinHazmanim.some(([start, end]) => dateStr >= start && dateStr <= end);
+}
+
+function isDST(date) {
+  const jan = new Date(date.getFullYear(), 0, 1);
+  const jul = new Date(date.getFullYear(), 6, 1);
+  const stdOffset = Math.max(jan.getTimezoneOffset(), jul.getTimezoneOffset());
+  return date.getTimezoneOffset() < stdOffset;
+}
+
+// ============================================================
+// DAVENING SCHEDULE ENGINE
+// ============================================================
+
+/**
+ * Get the full davening schedule for a given date.
+ * Returns arrays of {label, time} for shacharis, mincha, maariv.
+ */
+function getDaveningSchedule(date, zmanim, hebcalEvents) {
+  const dow = date.getDay(); // 0=Sun, 6=Sat
+  const isSun = dow === 0;
+  const isShab = dow === 6;
+  const isFri = dow === 5;
+
+  // Detect special day types from hebcal
+  const isYomTov = checkIsYomTov(hebcalEvents);
+  const isCholHamoed = checkIsCholHamoed(hebcalEvents);
+  const isHoshanaRabbah = checkIsHoshanaRabbah(hebcalEvents);
+  const isErevYomTov = checkIsErevYomTov(hebcalEvents);
+  const isChanukah = checkIsChanukah(hebcalEvents);
+  const isRoshChodesh = checkIsRoshChodesh(hebcalEvents);
+
+  if (isShab) return getShabbosSchedule(date, zmanim, hebcalEvents);
+  if (isYomTov) return getYomTovSchedule(date, zmanim, hebcalEvents);
+
+  // --- WEEKDAY (including Chol HaMoed, Erev YT, Erev Shabbos) ---
+  const schedule = { shacharis: [], mincha: [], maariv: [], type: 'weekday' };
+
+  // ===== SHACHARIS =====
+  if (isCholHamoed && !isHoshanaRabbah) {
+    schedule.shacharis.push('6:45');
+    schedule.shacharis.push('8:10');
+    schedule.shacharis.push('8:45');
+  } else {
+    // Early minyan (6:45 base) — compute for the week
+    const earlyTime = getEarlyShacharis(date, zmanim, isRoshChodesh);
+    if (earlyTime !== null) {
+      schedule.shacharis.push(earlyTime);
+    }
+
+    // Netz minyan — Mon-Fri only, when sunrise > 33 min after 6:45 (7:18+)
+    const sunriseMinOfDay = zmanim._sunriseMin;
+    const gapFromEarly = sunriseMinOfDay - (6 * 60 + 45); // minutes after 6:45
+    if (!isSun && gapFromEarly > 33) {
+      schedule.shacharis.push('Netz ' + fmtTimeShort(zmanim.sunrise));
+    }
+
+    // 7:30 — always Sun-Fri
+    schedule.shacharis.push('7:30');
+
+    // 8:45 — Sundays, major holidays, bein hazmanim (excl chol hamoed)
+    if (isSun || isMajorUSHoliday(date) || (isBeinHazmanim(date) && !isCholHamoed)) {
+      schedule.shacharis.push('8:45');
+    }
+  }
+
+  // ===== MINCHA =====
+  if (isFri) {
+    // Erev Shabbos
+    if (isDST(date)) {
+      const plagTime = zmanim._plagMin;
+      if (plagTime !== null) {
+        const earlyMincha = roundTo5(plagTime - 15);
+        schedule.mincha.push(minutesToTimeStr(earlyMincha));
+      }
+    }
+    const sunsetMinus15 = zmanim._sunsetMin !== null ? roundTo5(zmanim._sunsetMin - 15) : null;
+    if (sunsetMinus15 !== null) {
+      schedule.mincha.push(minutesToTimeStr(sunsetMinus15));
+    }
+  } else if (isErevYomTov && !isFri) {
+    const sunsetMinus15 = zmanim._sunsetMin !== null ? roundTo5(zmanim._sunsetMin - 15) : null;
+    if (sunsetMinus15 !== null) {
+      schedule.mincha.push(minutesToTimeStr(sunsetMinus15));
+    }
+  } else if (dow >= 0 && dow <= 4) {
+    // Sun-Thu regular mincha
+    const mgMin = zmanim._minchaGedolaMin;
+
+    // 12:45 — Sundays & major holidays, when MG >= 12:45
+    if ((isSun || isMajorUSHoliday(date)) && mgMin !== null && mgMin >= 12 * 60 + 45) {
+      schedule.mincha.push('12:45');
+    }
+
+    // 1:15 — when MG >= 1:15
+    if (mgMin !== null && mgMin >= 13 * 60 + 15) {
+      schedule.mincha.push('1:15');
+    }
+
+    // 1:45 — always
+    schedule.mincha.push('1:45');
+
+    // Shkiah mincha — 13-18 min before sunset, rounded to 5
+    const shkiahMincha = getShkiahMincha(date, zmanim);
+    if (shkiahMincha !== null) {
+      schedule.mincha.push(minutesToTimeStr(shkiahMincha));
+    }
+  }
+
+  // ===== MAARIV =====
+  if (isFri) {
+    // No separate maariv on Friday — it's part of Kabbalas Shabbos
+  } else if (isErevYomTov) {
+    // Maariv Leil YT at Tzais 8.5°
+    schedule.maariv.push(fmtTimeShort(zmanim.tzeis));
+  } else if (dow >= 0 && dow <= 4) {
+    // Sun-Thu
+    // At shkiah
+    schedule.maariv.push(fmtTimeShort(zmanim.shkiah));
+
+    // 5:15 Chanukah
+    if (isChanukah) {
+      schedule.maariv.push('5:15');
+    }
+
+    // 8:15 or latest tzais for the week
+    const eveningMaariv = getEveningMaariv(date, zmanim);
+    if (eveningMaariv !== null) {
+      schedule.maariv.push(minutesToTimeStr(eveningMaariv));
+    }
+
+    // 9:45 always
+    schedule.maariv.push('9:45');
+  }
+
+  return schedule;
+}
+
+// ===== EARLY SHACHARIS CALCULATOR =====
+function getEarlyShacharis(date, zmanim, isRoshChodesh) {
+  const dow = date.getDay();
+  const isSun = dow === 0;
+  const sunriseMin = zmanim._sunriseMin;
+  if (sunriseMin === null) return '6:45';
+
+  const baseTime = 6 * 60 + 45; // 6:45 in minutes
+  const gap = sunriseMin - baseTime;
+
+  // If sunrise > 33 min after 6:45 and it's Sunday — canceled
+  if (isSun && gap > 33) return null;
+
+  // Rosh Chodesh override
+  if (isRoshChodesh) return '6:30';
+
+  // If sunrise <= 22 min after 6:45 — normal 6:45
+  if (gap <= 22) return '6:45';
+
+  // If gap 23-33 — shift to keep >=22 min before sunrise
+  if (gap > 22 && gap <= 33) {
+    // Latest start = sunrise - 22, rounded down to nearest 5
+    const latest = sunriseMin - 22;
+    const shifted = Math.floor(latest / 5) * 5;
+    const shiftedH = Math.floor(shifted / 60);
+    const shiftedM = shifted % 60;
+    return `${shiftedH}:${shiftedM.toString().padStart(2, '0')}`;
+  }
+
+  // If sunrise > 33 min after 6:45 (Mon-Fri) — canceled, netz replaces
+  if (gap > 33) return null;
+
+  return '6:45';
+}
+
+// ===== SHKIAH MINCHA CALCULATOR =====
+function getShkiahMincha(date, zmanim) {
+  if (zmanim._sunsetMin === null) return null;
+
+  // Get week range
+  const weekSun = getWeekSunday(date);
+  const sunTue = [];
+  const wedThu = [];
+  for (let i = 0; i <= 2; i++) {
+    const d = new Date(weekSun);
+    d.setDate(d.getDate() + i);
+    sunTue.push(getZmanim(d)._sunsetMin);
+  }
+  for (let i = 3; i <= 4; i++) {
+    const d = new Date(weekSun);
+    d.setDate(d.getDate() + i);
+    wedThu.push(getZmanim(d)._sunsetMin);
+  }
+
+  // Try one time for whole week
+  const allSunsets = [...sunTue, ...wedThu].filter(s => s !== null);
+  if (allSunsets.length === 0) return null;
+
+  const minSunset = Math.min(...allSunsets);
+  const maxSunset = Math.max(...allSunsets);
+
+  // Find a 5-min-rounded time that keeps 13-18 min before sunset for all days
+  const candidate = roundTo5(minSunset - 18);
+  const gapFromMax = maxSunset - candidate;
+  const gapFromMin = minSunset - candidate;
+
+  if (gapFromMin >= 13 && gapFromMin <= 18 && gapFromMax >= 13 && gapFromMax <= 18) {
+    return candidate;
+  }
+
+  // Split: figure out which half this date falls in
+  const dow = date.getDay();
+  const relevantSunsets = dow <= 2 ? sunTue : wedThu;
+  const relevantMin = Math.min(...relevantSunsets.filter(s => s !== null));
+  return roundTo5(relevantMin - 15); // target ~15 min before, clamped by rounding
+}
+
+// ===== EVENING MAARIV (8:15 or latest tzais for week) =====
+function getEveningMaariv(date, zmanim) {
+  // Check if tzais 8.5° >= 8:15 PM for this week
+  const weekSun = getWeekSunday(date);
+  let latestTzais = 0;
+
+  for (let i = 0; i <= 4; i++) { // Sun-Thu
+    const d = new Date(weekSun);
+    d.setDate(d.getDate() + i);
+    const z = getZmanim(d);
+    if (z.tzeis) {
+      const tzaisMin = z.tzeis.getHours() * 60 + z.tzeis.getMinutes();
+      if (tzaisMin > latestTzais) latestTzais = tzaisMin;
+    }
+  }
+
+  const target815 = 20 * 60 + 15; // 8:15 PM in minutes
+
+  if (latestTzais >= target815) {
+    return target815; // 8:15 PM
+  } else {
+    // Use latest tzais of the week, rounded to 5
+    return roundTo5(latestTzais);
+  }
+}
+
+// ===== SHABBOS SCHEDULE =====
+function getShabbosSchedule(date, zmanim, hebcalEvents) {
+  const schedule = { shacharis: [], mincha: [], maariv: [], type: 'shabbos', erevMincha: [] };
+
+  // Erev Shabbos mincha times are on Friday
+  const friday = new Date(date);
+  friday.setDate(friday.getDate() - 1);
+  const fridayZmanim = getZmanim(friday);
+
+  // Early kabbalas shabbos — plag - 15, only during DST or through Sukkos
+  if (isDST(friday)) {
+    const plagMin = fridayZmanim._plagMin;
+    if (plagMin !== null) {
+      schedule.erevMincha.push(minutesToTimeStr(roundTo5(plagMin - 15)));
+    }
+  }
+
+  // Regular erev shabbos mincha — sunset - 15
+  if (fridayZmanim._sunsetMin !== null) {
+    schedule.erevMincha.push(minutesToTimeStr(roundTo5(fridayZmanim._sunsetMin - 15)));
+  }
+
+  // Shacharis
+  schedule.shacharis.push('8:45');
+
+  // Mincha A
+  schedule.mincha.push('2:15');
+
+  // Mincha B — sunset - 40, cap at 6:15
+  if (zmanim._sunsetMin !== null) {
+    let minchaBMin = zmanim._sunsetMin - 40;
+    const cap = 18 * 60 + 15; // 6:15 PM
+    if (minchaBMin > cap) minchaBMin = cap;
+    schedule.mincha.push(minutesToTimeStr(roundTo5(minchaBMin)));
+  }
+
+  // Maariv — sunset + 55
+  if (zmanim._sunsetMin !== null) {
+    schedule.maariv.push(minutesToTimeStr(roundTo5(zmanim._sunsetMin + 55)));
+  }
+
+  return schedule;
+}
+
+// ===== YOM TOV SCHEDULE =====
+function getYomTovSchedule(date, zmanim, hebcalEvents) {
+  const schedule = { shacharis: [], mincha: [], maariv: [], type: 'yomtov', erevMincha: [] };
+
+  // Shacharis
+  schedule.shacharis.push('8:45');
+
+  // Mincha — sunset - 25
+  if (zmanim._sunsetMin !== null) {
+    schedule.mincha.push(minutesToTimeStr(roundTo5(zmanim._sunsetMin - 25)));
+  }
+
+  // Maariv — determine if day 1 or day 2
+  const isSecondDay = checkIsSecondDayYT(hebcalEvents);
+  if (isSecondDay) {
+    // Motzei YT — sunset + 55
+    if (zmanim._sunsetMin !== null) {
+      schedule.maariv.push(minutesToTimeStr(roundTo5(zmanim._sunsetMin + 55)));
+    }
+  } else {
+    // Day 1 — Tzais 8.5°
+    schedule.maariv.push(fmtTimeShort(zmanim.tzeis));
+  }
+
+  return schedule;
+}
+
+// ============================================================
+// HEBCAL EVENT CHECKERS
+// ============================================================
+
+function checkIsYomTov(events) {
+  if (!events) return false;
+  const ytKeywords = ['Rosh Hashana', 'Yom Kippur', 'Sukkot I', 'Sukkot II', 'Shmini Atzeret', 'Simchat Torah', 'Pesach I', 'Pesach II', 'Pesach VII', 'Pesach VIII', 'Shavuot I', 'Shavuot II'];
+  return events.some(e => ytKeywords.some(k => e.title && e.title.includes(k)) && e.category === 'holiday');
+}
+
+function checkIsCholHamoed(events) {
+  if (!events) return false;
+  return events.some(e => e.title && (e.title.includes('Chol ha') || e.title.includes('Chol HaMoed')));
+}
+
+function checkIsHoshanaRabbah(events) {
+  if (!events) return false;
+  return events.some(e => e.title && e.title.includes('Hoshana Rabbah'));
+}
+
+function checkIsErevYomTov(events) {
+  if (!events) return false;
+  return events.some(e => e.title && e.title.startsWith('Erev') && e.category === 'holiday');
+}
+
+function checkIsChanukah(events) {
+  if (!events) return false;
+  return events.some(e => e.title && e.title.includes('Chanukah') && !e.title.includes('VIII'));
+}
+
+function checkIsRoshChodesh(events) {
+  if (!events) return false;
+  return events.some(e => e.category === 'roshchodesh');
+}
+
+function checkIsSecondDayYT(events) {
+  if (!events) return false;
+  return events.some(e => e.title && (e.title.includes(' II') || e.title.includes('VIII') || e.title.includes('Simchat Torah') || e.title.includes('Shmini Atzeret')));
+}
+
+// ============================================================
+// HEBREW DATE & HEBCAL API
+// ============================================================
 
 const hebcalCache = {};
 
@@ -311,12 +687,30 @@ async function getHebcalData(date) {
   }
 }
 
+async function getHebcalDataBilingual(date) {
+  const key = 'bi_' + date.toISOString().split('T')[0];
+  if (hebcalCache[key]) return hebcalCache[key];
+  try {
+    const url = `https://www.hebcal.com/hebcal?v=1&cfg=json&year=${date.getFullYear()}&month=${date.getMonth() + 1}&day=${date.getDate()}&geo=pos&latitude=${CONFIG.lat}&longitude=${CONFIG.lon}&tzid=${CONFIG.tzid}&M=on&s=on&D=on&d=on&o=on&F=on`;
+    const resp = await fetch(url);
+    const data = await resp.json();
+    hebcalCache[key] = data;
+    return data;
+  } catch (e) {
+    console.error('Hebcal fetch error:', e);
+    return null;
+  }
+}
+
 async function getHebrewDate(date) {
-  const key = date.toISOString().split('T')[0];
+  const key = 'hd_' + date.toISOString().split('T')[0];
+  if (hebcalCache[key]) return hebcalCache[key];
   try {
     const url = `https://www.hebcal.com/converter?cfg=json&gy=${date.getFullYear()}&gm=${date.getMonth() + 1}&gd=${date.getDate()}&g2h=1`;
     const resp = await fetch(url);
-    return await resp.json();
+    const data = await resp.json();
+    hebcalCache[key] = data;
+    return data;
   } catch (e) {
     console.error('Hebrew date fetch error:', e);
     return null;
@@ -338,107 +732,49 @@ async function getHebcalMonthData(year, month) {
   }
 }
 
-// ============================================================
-// DAVENING SCHEDULE LOGIC
-// ============================================================
-
-function getDayOfWeek(date) { return date.getDay(); }
-function isShabbos(date) { return date.getDay() === 6; }
-
-async function isRoshChodesh(date) {
-  const hd = await getHebrewDate(date);
-  if (!hd) return false;
-  return hd.hd === 1 || hd.hd === 30;
+async function getHebcalMonthDataBilingual(year, month) {
+  const cacheKey = `month_bi_${year}_${month}`;
+  if (hebcalCache[cacheKey]) return hebcalCache[cacheKey];
+  try {
+    const url = `https://www.hebcal.com/hebcal?v=1&cfg=json&year=${year}&month=${month + 1}&geo=pos&latitude=${CONFIG.lat}&longitude=${CONFIG.lon}&tzid=${CONFIG.tzid}&M=on&s=on&D=on&d=on&o=on&F=on&c=on`;
+    const resp = await fetch(url);
+    const data = await resp.json();
+    hebcalCache[cacheKey] = data;
+    return data;
+  } catch (e) {
+    return null;
+  }
 }
 
-function isUSHoliday(date) {
-  const m = date.getMonth();
-  const d = date.getDate();
+// ============================================================
+// DAY NAME HELPERS
+// ============================================================
+
+const dayNamesHeb = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'שבת'];
+
+function getDayLabel(date) {
   const dow = date.getDay();
-  if (m === 0 && d === 1) return true;
-  if (m === 6 && d === 4) return true;
-  if (m === 11 && d === 25) return true;
-  if (m === 4 && dow === 1 && d > 24) return true;
-  if (m === 8 && dow === 1 && d <= 7) return true;
-  if (m === 10 && dow === 4 && d >= 22 && d <= 28) return true;
-  return false;
-}
-
-function getShabbosMinchaBTime(shkiah) {
-  if (!shkiah) return null;
-  const shkiahTotalMin = shkiah.getHours() * 60 + shkiah.getMinutes();
-  if (shkiahTotalMin >= 1135) {
-    const d = new Date(shkiah);
-    d.setHours(18, 15, 0, 0);
-    return d;
-  } else {
-    const d = new Date(shkiah);
-    d.setMinutes(d.getMinutes() - 40);
-    return d;
-  }
-}
-
-async function getDaveningSchedule(date, zmanim) {
-  const dow = getDayOfWeek(date);
-  const rc = await isRoshChodesh(date);
-  const shabbos = isShabbos(date);
-  const usHoliday = isUSHoliday(date);
-
-  const schedule = { weekday: {}, shabbos: {}, notes: [] };
-
-  if (shabbos) {
-    schedule.shabbos = {
-      shacharis: '8:30 AM',
-      minchaB: fmtTime(getShabbosMinchaBTime(zmanim.shkiah)),
-      maariv: zmanim.shkiah ? fmtTime(new Date(zmanim.shkiah.getTime() + 55 * 60000)) : '--:--',
-    };
-    schedule.shabbos.minchaA = '2:15 PM';
-  } else {
-    if (rc) {
-      schedule.weekday.shacharis = '6:30 AM';
-      schedule.notes.push('Rosh Chodesh Shacharis');
-    } else if (dow === 0 || usHoliday) {
-      schedule.weekday.shacharis = '8:45 AM';
-    } else {
-      schedule.weekday.shacharis = '7:00 AM';
-    }
-
-    if (zmanim.shkiah) {
-      const shkiahMin = zmanim.shkiah.getHours() * 60 + zmanim.shkiah.getMinutes();
-      if (shkiahMin >= 1095) {
-        schedule.weekday.mincha = fmtTime(zmanim.shkiah) + ' (at shkiah)';
-        schedule.weekday.maariv = '9:45 PM';
-      } else if (shkiahMin >= 1005) {
-        schedule.weekday.mincha = fmtTime(new Date(zmanim.shkiah.getTime() - 10 * 60000));
-        schedule.weekday.maariv = '8:15 PM';
-      } else {
-        schedule.weekday.mincha = fmtTime(new Date(zmanim.shkiah.getTime() - 10 * 60000));
-        schedule.weekday.maariv = fmtTime(zmanim.shkiah);
-      }
-    }
-  }
-
-  return schedule;
+  return dayNamesHeb[dow];
 }
 
 // ============================================================
 // ZMANIM TAB RENDERING
 // ============================================================
+
 async function renderZmanim() {
   const date = currentDate;
   const zmanim = getZmanim(date);
   const hd = await getHebrewDate(date);
   const hebcal = await getHebcalData(date);
+  const hebcalBi = await getHebcalDataBilingual(date);
 
   const heroEl = document.getElementById('date-hero');
   const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-  const engDate = date.toLocaleDateString('en-US', options);
-  let hebDate = '';
+  let engDate = date.toLocaleDateString('en-US', options);
+  // Replace Saturday with שבת
+  engDate = engDate.replace('Saturday', 'שבת');
+  let hebDate = hd ? hd.hebrew : '';
   let badges = '';
-
-  if (hd) {
-    hebDate = `${hd.hebrew}`;
-  }
 
   if (hebcal && hebcal.items) {
     const dateStr = date.toISOString().split('T')[0];
@@ -463,14 +799,14 @@ async function renderZmanim() {
       <div class="date-badges">${badges}</div>
     </div>
     <div class="next-info">
-      <div class="next-label">Candle Lighting</div>
+      <div class="next-label">הדלקת נרות</div>
       <div class="next-value">${fmtTime(nextZmanim.candleLighting)}</div>
-      <div class="next-label" style="margin-top:8px">Shkiah</div>
+      <div class="next-label" style="margin-top:8px">שקיעה</div>
       <div class="next-value">${fmtTime(nextZmanim.shkiah)}</div>
     </div>
   `;
 
-  // Morning times
+  // Morning zmanim
   const morningEl = document.getElementById('morning-times');
   morningEl.innerHTML = zmanRow('Alos Hashachar', 'עלות השחר', '16.1° below horizon', zmanim.alos) +
     zmanRow('Misheyakir', 'משיכיר', '11° below horizon', zmanim.misheyakir) +
@@ -481,7 +817,7 @@ async function renderZmanim() {
     zmanRow('Sof Zman Tefilla (GRA)', 'סוף זמן תפילה גר״א', 'Sea level', zmanim.tefillaGra) +
     zmanRow('Chatzos', 'חצות', 'Astronomical noon', zmanim.chatzos);
 
-  // Evening times
+  // Evening zmanim
   const eveningEl = document.getElementById('evening-times');
   eveningEl.innerHTML = zmanRow('Mincha Gedola', 'מנחה גדולה', 'Chatzos + 30 min', zmanim.minchaGedola) +
     zmanRow('Plag HaMincha', 'פלג המנחה', '10.75 shaos GRA', zmanim.plag) +
@@ -490,22 +826,52 @@ async function renderZmanim() {
     zmanRow('Tzeis Hakochavim', 'צאת הכוכבים', '8.5° below horizon', zmanim.tzeis) +
     zmanRow('Tzeis (72 min)', 'ר״ת', '72 min after sunset', zmanim.tzeis72);
 
-  // Davening section
+  // Davening schedule
   const daveningEl = document.getElementById('davening-section');
-  const sched = await getDaveningSchedule(date, zmanim);
-  let daveningHTML = '<h3>🕐 Davening Schedule</h3>';
+  const dateStr = date.toISOString().split('T')[0];
+  const biEvents = hebcalBi && hebcalBi.items ? hebcalBi.items.filter(i => i.date === dateStr || (i.date && i.date.startsWith(dateStr))) : [];
+  const sched = getDaveningSchedule(date, zmanim, biEvents);
 
-  if (isShabbos(date)) {
-    daveningHTML += '<h4>Shabbos</h4>';
-    daveningHTML += davenRow('Shacharis', 'שחרית', sched.shabbos.shacharis, true);
-    daveningHTML += davenRow('Mincha א', 'מנחה א', sched.shabbos.minchaA, true);
-    daveningHTML += davenRow('Mincha ב', 'מנחה ב', sched.shabbos.minchaB, true);
-    daveningHTML += davenRow('Maariv', 'מעריב', sched.shabbos.maariv, true);
+  let daveningHTML = '<h3>לוח תפילות</h3>';
+
+  // Shabbos
+  if (sched.type === 'shabbos') {
+    if (sched.erevMincha && sched.erevMincha.length) {
+      daveningHTML += `<div class="daven-row"><span class="daven-he">מנחה ערב שבת</span><span class="daven-time">${sched.erevMincha.join(' / ')}</span></div>`;
+    }
+    daveningHTML += `<div class="daven-row"><span class="daven-he">שחרית</span><span class="daven-time">${sched.shacharis.join(' / ')}</span></div>`;
+    daveningHTML += `<div class="daven-row"><span class="daven-he">מנחה</span><span class="daven-time">${sched.mincha.join(' / ')}</span></div>`;
+    daveningHTML += `<div class="daven-row"><span class="daven-he">מעריב / הבדלה</span><span class="daven-time">${sched.maariv.join(' / ')}</span></div>`;
+  } else if (sched.type === 'yomtov') {
+    daveningHTML += `<div class="daven-row"><span class="daven-he">שחרית</span><span class="daven-time">${sched.shacharis.join(' / ')}</span></div>`;
+    daveningHTML += `<div class="daven-row"><span class="daven-he">מנחה</span><span class="daven-time">${sched.mincha.join(' / ')}</span></div>`;
+    daveningHTML += `<div class="daven-row"><span class="daven-he">מעריב</span><span class="daven-time">${sched.maariv.join(' / ')}</span></div>`;
   } else {
-    daveningHTML += '<h4>Weekday</h4>';
-    daveningHTML += davenRow('Shacharis', 'שחרית', sched.weekday.shacharis, false, sched.notes.join(', '));
-    if (sched.weekday.mincha) daveningHTML += davenRow('Mincha', 'מנחה', sched.weekday.mincha);
-    if (sched.weekday.maariv) daveningHTML += davenRow('Maariv', 'מעריב', sched.weekday.maariv);
+    // Weekday — always show full schedule
+    daveningHTML += '<h4>שבת</h4>';
+    const nextShab = new Date(date);
+    while (nextShab.getDay() !== 6) nextShab.setDate(nextShab.getDate() + 1);
+    const shabZmanim = getZmanim(nextShab);
+    const shabDateStr = nextShab.toISOString().split('T')[0];
+    const shabBi = await getHebcalDataBilingual(nextShab);
+    const shabEvents = shabBi && shabBi.items ? shabBi.items.filter(i => i.date === shabDateStr || (i.date && i.date.startsWith(shabDateStr))) : [];
+    const shabSched = getShabbosSchedule(nextShab, shabZmanim, shabEvents);
+
+    if (shabSched.erevMincha && shabSched.erevMincha.length) {
+      daveningHTML += `<div class="daven-row"><span class="daven-he">מנחה ע״ש</span><span class="daven-time">${shabSched.erevMincha.join(' / ')}</span></div>`;
+    }
+    daveningHTML += `<div class="daven-row"><span class="daven-he">שחרית</span><span class="daven-time">${shabSched.shacharis.join(' / ')}</span></div>`;
+    daveningHTML += `<div class="daven-row"><span class="daven-he">מנחה</span><span class="daven-time">${shabSched.mincha.join(' / ')}</span></div>`;
+    daveningHTML += `<div class="daven-row"><span class="daven-he">מעריב</span><span class="daven-time">${shabSched.maariv.join(' / ')}</span></div>`;
+
+    daveningHTML += '<h4>חול</h4>';
+    daveningHTML += `<div class="daven-row"><span class="daven-he">שחרית</span><span class="daven-time">${sched.shacharis.join(' / ')}</span></div>`;
+    if (sched.mincha.length) {
+      daveningHTML += `<div class="daven-row"><span class="daven-he">מנחה</span><span class="daven-time">${sched.mincha.join(' / ')}</span></div>`;
+    }
+    if (sched.maariv.length) {
+      daveningHTML += `<div class="daven-row"><span class="daven-he">מעריב</span><span class="daven-time">${sched.maariv.join(' / ')}</span></div>`;
+    }
   }
 
   daveningEl.innerHTML = daveningHTML;
@@ -521,59 +887,62 @@ function zmanRow(nameEn, nameHe, desc, time, cls) {
   </div>`;
 }
 
-function davenRow(name, nameHe, time, isShabbos, note) {
-  return `<div class="daven-row ${isShabbos ? 'shabbos' : ''}">
-    <div class="daven-left">
-      <span class="daven-name">${name}</span>
-      <span class="daven-he">${nameHe}</span>
-      ${note ? `<span class="daven-note">${note}</span>` : ''}
-    </div>
-    <div class="daven-time">${time}</div>
-  </div>`;
-}
+// ============================================================
+// CALENDAR TAB — with davening times per cell
+// ============================================================
 
-// ============================================================
-// CALENDAR TAB
-// ============================================================
 async function renderCalendar() {
   const year = calendarMonth.getFullYear();
   const month = calendarMonth.getMonth();
-  const monthData = await getHebcalMonthData(year, month);
+
+  const monthDataHe = await getHebcalMonthData(year, month);
+  const monthDataBi = await getHebcalMonthDataBilingual(year, month);
 
   const titleEl = document.getElementById('calendar-month-title');
   titleEl.textContent = calendarMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
   const badgeEl = document.getElementById('calendar-badge');
-  if (monthData && monthData.items) {
-    const hdItems = monthData.items.filter(i => i.category === 'hebdate');
+  if (monthDataHe && monthDataHe.items) {
+    const hdItems = monthDataHe.items.filter(i => i.category === 'hebdate');
     if (hdItems.length > 0) {
-      const firstHeb = hdItems[0] ? hdItems[0].hebrew : '';
-      badgeEl.textContent = firstHeb.replace(/[^֐-׿\s]/g, '').trim().split(' ').pop() || '';
+      badgeEl.textContent = hdItems[0].hebrew || '';
     }
   }
 
-  const eventsMap = {};
-  if (monthData && monthData.items) {
-    monthData.items.forEach(item => {
+  // Build events map (Hebrew for display)
+  const eventsMapHe = {};
+  const eventsMapBi = {};
+  if (monthDataHe && monthDataHe.items) {
+    monthDataHe.items.forEach(item => {
       const d = item.date ? item.date.split('T')[0] : null;
       if (!d) return;
-      if (!eventsMap[d]) eventsMap[d] = { holidays: [], parsha: null, candles: null, havdalah: null, hebDate: null };
-      if (item.category === 'parashat') eventsMap[d].parsha = item.title;
-      else if (item.category === 'candles') eventsMap[d].candles = item.title;
-      else if (item.category === 'havdalah') eventsMap[d].havdalah = item.title;
-      else if (item.category === 'hebdate') eventsMap[d].hebDate = item.hebrew;
-      else if (item.category === 'holiday' || item.category === 'roshchodesh') eventsMap[d].holidays.push(item.title);
+      if (!eventsMapHe[d]) eventsMapHe[d] = { holidays: [], parsha: null, hebDate: null };
+      if (item.category === 'parashat') eventsMapHe[d].parsha = item.title;
+      else if (item.category === 'hebdate') eventsMapHe[d].hebDate = item.hebrew;
+      else if (item.category === 'holiday' || item.category === 'roshchodesh') eventsMapHe[d].holidays.push(item.title);
+    });
+  }
+  if (monthDataBi && monthDataBi.items) {
+    monthDataBi.items.forEach(item => {
+      const d = item.date ? item.date.split('T')[0] : null;
+      if (!d) return;
+      if (!eventsMapBi[d]) eventsMapBi[d] = [];
+      eventsMapBi[d].push(item);
     });
   }
 
   if (window.innerWidth < 768) {
-    renderCalendarAgenda(year, month, eventsMap);
+    renderCalendarAgenda(year, month, eventsMapHe, eventsMapBi);
   } else {
-    renderCalendarGrid(year, month, eventsMap);
+    renderCalendarGrid(year, month, eventsMapHe, eventsMapBi);
   }
 }
 
-function renderCalendarGrid(year, month, eventsMap) {
+function calTimeLine(label, times) {
+  return `<div class="cal-time-row"><span class="cal-time-value">${times}</span><span class="cal-time-label">${label}</span></div>`;
+}
+
+function renderCalendarGrid(year, month, eventsMapHe, eventsMapBi) {
   const daysHeaderEl = document.getElementById('days-header');
   const gridEl = document.getElementById('calendar-grid');
   const agendaEl = document.getElementById('calendar-agenda');
@@ -581,8 +950,8 @@ function renderCalendarGrid(year, month, eventsMap) {
   gridEl.style.display = 'grid';
   daysHeaderEl.style.display = 'grid';
 
-  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Shabbos'];
-  daysHeaderEl.innerHTML = dayNames.map((d, i) =>
+  const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'שבת'];
+  daysHeaderEl.innerHTML = dayLabels.map((d, i) =>
     `<div class="day-label ${i === 6 ? 'shabbos' : ''}">${d}</div>`
   ).join('');
 
@@ -601,22 +970,36 @@ function renderCalendarGrid(year, month, eventsMap) {
     const dateStr = dateObj.toISOString().split('T')[0];
     const isToday = dateStr === todayStr;
     const isSat = dateObj.getDay() === 6;
-    const ev = eventsMap[dateStr] || {};
 
-    let cellContent = `<div class="cell-date">${d}</div>`;
-    if (ev.hebDate) cellContent += `<div class="cell-hebrew">${ev.hebDate}</div>`;
-    if (ev.holidays && ev.holidays.length) cellContent += `<div class="cell-holiday">${ev.holidays.join(', ')}</div>`;
-    if (ev.parsha) cellContent += `<div class="cell-parsha">${ev.parsha}</div>`;
-    if (ev.candles) cellContent += `<div class="cell-schedule"><strong>🕯</strong> ${ev.candles}</div>`;
-    if (ev.havdalah) cellContent += `<div class="cell-schedule"><strong>✨</strong> ${ev.havdalah}</div>`;
+    const evHe = eventsMapHe[dateStr] || {};
+    const evBi = eventsMapBi[dateStr] || [];
 
-    if (isSat) {
-      const z = getZmanim(dateObj);
-      cellContent += `<div class="cell-schedule"><strong>Shacharis:</strong> 8:30 AM</div>`;
-      cellContent += `<div class="cell-schedule"><strong>Shkiah:</strong> ${fmtTime(z.shkiah)}</div>`;
-    }
+    // Header line: day · date · hebrew date · holiday/parsha
+    const dayLabel = getDayLabel(dateObj);
+    const dateShort = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    let headerParts = [dayLabel, dateShort];
+    if (evHe.hebDate) headerParts.push(evHe.hebDate);
+    if (evHe.holidays && evHe.holidays.length) headerParts.push(evHe.holidays[0]);
+    else if (evHe.parsha) headerParts.push(evHe.parsha);
+    const headerLine = headerParts.join(' · ');
 
-    cells += `<div class="cal-cell ${isToday ? 'today' : ''} ${isSat ? 'shabbos' : ''}">${cellContent}</div>`;
+    // Zmanim & schedule
+    const z = getZmanim(dateObj);
+    const sched = getDaveningSchedule(dateObj, z, evBi);
+
+    let timesHTML = '';
+    if (sched.shacharis.length) timesHTML += calTimeLine('שחרית', sched.shacharis.join(' / '));
+    timesHTML += calTimeLine('סוף זמן שמע', fmtTimeShort(z.shemaMGA) + ' / ' + fmtTimeShort(z.shemaGra));
+    timesHTML += calTimeLine('סוף זמן תפילה', fmtTimeShort(z.tefillaMGA) + ' / ' + fmtTimeShort(z.tefillaGra));
+    if (sched.mincha.length) timesHTML += calTimeLine('מנחה', sched.mincha.join(' / '));
+    if (sched.maariv.length) timesHTML += calTimeLine('מעריב', sched.maariv.join(' / '));
+    timesHTML += calTimeLine('שקיעה', fmtTimeShort(z.shkiah));
+
+    cells += `<div class="cal-cell ${isToday ? 'today' : ''} ${isSat ? 'shabbos' : ''}">
+      <div class="cal-header">${headerLine}</div>
+      <div class="cal-divider"></div>
+      <div class="cal-times">${timesHTML}</div>
+    </div>`;
   }
 
   const totalCells = firstDay + daysInMonth;
@@ -628,7 +1011,7 @@ function renderCalendarGrid(year, month, eventsMap) {
   gridEl.innerHTML = cells;
 }
 
-function renderCalendarAgenda(year, month, eventsMap) {
+function renderCalendarAgenda(year, month, eventsMapHe, eventsMapBi) {
   const agendaEl = document.getElementById('calendar-agenda');
   const gridEl = document.getElementById('calendar-grid');
   const daysHeaderEl = document.getElementById('days-header');
@@ -646,15 +1029,32 @@ function renderCalendarAgenda(year, month, eventsMap) {
     const dateStr = dateObj.toISOString().split('T')[0];
     const isToday = dateStr === todayStr;
     const isSat = dateObj.getDay() === 6;
-    const ev = eventsMap[dateStr] || {};
-    const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+
+    const evHe = eventsMapHe[dateStr] || {};
+    const evBi = eventsMapBi[dateStr] || [];
+
+    const dayLabel = getDayLabel(dateObj);
+    const dateShort = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    let headerParts = [dayLabel, dateShort];
+    if (evHe.hebDate) headerParts.push(evHe.hebDate);
+    if (evHe.holidays && evHe.holidays.length) headerParts.push(evHe.holidays[0]);
+    else if (evHe.parsha) headerParts.push(evHe.parsha);
+
+    const z = getZmanim(dateObj);
+    const sched = getDaveningSchedule(dateObj, z, evBi);
+
+    let timesHTML = '';
+    if (sched.shacharis.length) timesHTML += calTimeLine('שחרית', sched.shacharis.join(' / '));
+    timesHTML += calTimeLine('סוף זמן שמע', fmtTimeShort(z.shemaMGA) + ' / ' + fmtTimeShort(z.shemaGra));
+    timesHTML += calTimeLine('סוף זמן תפילה', fmtTimeShort(z.tefillaMGA) + ' / ' + fmtTimeShort(z.tefillaGra));
+    if (sched.mincha.length) timesHTML += calTimeLine('מנחה', sched.mincha.join(' / '));
+    if (sched.maariv.length) timesHTML += calTimeLine('מעריב', sched.maariv.join(' / '));
+    timesHTML += calTimeLine('שקיעה', fmtTimeShort(z.shkiah));
 
     html += `<div class="agenda-card ${isToday ? 'today' : ''} ${isSat ? 'shabbos' : ''}">
-      <div class="agenda-date"><span class="eng">${dayName}</span><span class="heb">${ev.hebDate || ''}</span></div>
-      ${ev.holidays && ev.holidays.length ? `<div class="agenda-holiday">${ev.holidays.join(', ')}</div>` : ''}
-      ${ev.parsha ? `<div class="agenda-parsha">${ev.parsha}</div>` : ''}
-      ${ev.candles ? `<div class="agenda-schedule"><strong>🕯</strong> ${ev.candles}</div>` : ''}
-      ${ev.havdalah ? `<div class="agenda-schedule"><strong>✨</strong> ${ev.havdalah}</div>` : ''}
+      <div class="cal-header">${headerParts.join(' · ')}</div>
+      <div class="cal-divider"></div>
+      <div class="cal-times">${timesHTML}</div>
     </div>`;
   }
 
@@ -662,7 +1062,7 @@ function renderCalendarAgenda(year, month, eventsMap) {
 }
 
 // ============================================================
-// NEWSLETTER GENERATOR
+// NEWSLETTER GENERATOR (unchanged from original)
 // ============================================================
 
 function renderNewsletterInfo() {
@@ -670,7 +1070,7 @@ function renderNewsletterInfo() {
   let shabbos = new Date();
   while (shabbos.getDay() !== 6) shabbos.setDate(shabbos.getDate() + 1);
   const shabbosStr = shabbos.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
-  infoEl.textContent = `📅 Generating for Shabbos: ${shabbosStr}`;
+  infoEl.textContent = `📅 Generating for שבת: ${shabbosStr}`;
 }
 
 function isPirkeiAvosSeason(date) {
@@ -689,19 +1089,14 @@ async function renderNewsletter() {
 
   const fridayZmanim = getZmanim(friday);
   const shabbosZmanim = getZmanim(shabbos);
-
   const fridayHd = await getHebrewDate(friday);
   const shabbosHd = await getHebrewDate(shabbos);
-
   const hebcalData = await getHebcalData(shabbos);
+
   let parsha = 'פרשת השבוע';
-  let parshaEn = '';
   if (hebcalData && hebcalData.items) {
     const parashat = hebcalData.items.find(i => i.category === 'parashat');
-    if (parashat) {
-      parsha = parashat.hebrew || parashat.title;
-      parshaEn = parashat.title;
-    }
+    if (parashat) parsha = parashat.hebrew || parashat.title;
   }
 
   const minchaOverride = document.getElementById('nl-mincha-override').value;
@@ -720,76 +1115,32 @@ async function renderNewsletter() {
   const candleLighting = fmtTime(fridayZmanim.candleLighting);
   const minchaErev = minchaOverride || fmtTime(new Date(fridayZmanim.shkiah.getTime() - 18 * 60000));
   const shkiah = fmtTime(shabbosZmanim.shkiah);
-  const minchaBTime = minchaBOverride || fmtTime(getShabbosMinchaBTime(shabbosZmanim.shkiah));
-  const maarivTime = maarivOverride || fmtTime(new Date(shabbosZmanim.shkiah.getTime() + 55 * 60000));
-  const torahStoriesTime = torahStoriesOverride || '9:45 AM';
 
+  let minchaBMin = shabbosZmanim._sunsetMin - 40;
+  if (minchaBMin > 18 * 60 + 15) minchaBMin = 18 * 60 + 15;
+  const minchaBTime = minchaBOverride || minutesToTimeStr(roundTo5(minchaBMin));
+
+  const maarivTime = maarivOverride || minutesToTimeStr(roundTo5(shabbosZmanim._sunsetMin + 55));
+  const torahStoriesTime = torahStoriesOverride || '9:45 AM';
   const isAvos = isPirkeiAvosSeason(shabbos);
   const avosChapter = avosOverride || (isAvos ? 'פרק א' : '');
-
-  const isSummer = shabbosZmanim.shkiah && (shabbosZmanim.shkiah.getHours() * 60 + shabbosZmanim.shkiah.getMinutes()) >= 1135;
-  const shaloshSeudos = isSummer ? '' : 'Shalosh Seudos in shul';
-
   const engDateStr = shabbos.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
   const hebDateStr = shabbosHd ? shabbosHd.hebrew : '';
 
-  const emblemUrl = 'emblem.png';
-
   nlPage.innerHTML = `
     <div class="nl-header">
-      <div class="nl-logo"><img src="${emblemUrl}" alt="KZY Emblem"></div>
-      <div class="nl-parsha">
-        <h1>${parsha}</h1>
-        <div class="nl-shul-sub">${CONFIG.shulName} · ${CONFIG.shulNameHe}</div>
-      </div>
-      <div class="nl-dates">
-        <div class="nl-heb-date">${hebDateStr}</div>
-        <div class="nl-eng-date">${engDateStr}</div>
-        ${isAvos ? `<div class="nl-avos-ref">${avosChapter}</div>` : ''}
-      </div>
+      <div class="nl-logo"><img src="emblem.png" alt="KZY Emblem"></div>
+      <div class="nl-parsha"><h1>${parsha}</h1><div class="nl-shul-sub">${CONFIG.shulName} · ${CONFIG.shulNameHe}</div></div>
+      <div class="nl-dates"><div class="nl-heb-date">${hebDateStr}</div><div class="nl-eng-date">${engDateStr}</div>${isAvos ? `<div class="nl-avos-ref">${avosChapter}</div>` : ''}</div>
     </div>
-
     <div class="nl-body">
       <div class="nl-left">
         ${simcha ? `<div class="nl-announce-box highlight"><strong>מזל טוב!</strong>${simcha}</div>` : ''}
         ${announcements ? `<div class="nl-announce-box"><strong>📢 Announcements</strong>${announcements}</div>` : ''}
-
-        ${isAvos ? `
-        <div class="nl-pirkei-avos">
-          <div class="pa-title">פרקי אבות</div>
-          <div class="pa-time">${avosChapter}</div>
-        </div>
-        <hr class="nl-divider">
-        ` : ''}
-
-        ${shaloshSeudos ? `
-        <div class="nl-section-title">סעודה שלישית</div>
-        <div class="nl-section-body">${shaloshSeudos}${seudos ? '<br>' + seudos : ''}</div>
-        <hr class="nl-divider">
-        ` : (seudos ? `
-        <div class="nl-section-title">סעודה שלישית</div>
-        <div class="nl-section-body">${seudos}</div>
-        <hr class="nl-divider">
-        ` : '')}
-
-        ${shiurTopic ? `
-        <div class="nl-section-title">שיעור</div>
-        <div class="nl-section-body">${shiurTopic}</div>
-        <hr class="nl-divider">
-        ` : ''}
-
-        ${specialShiur ? `
-        <div class="nl-section-title">Special Shiur / Event</div>
-        <div class="nl-section-body">${specialShiur}</div>
-        <hr class="nl-divider">
-        ` : ''}
-
-        ${sponsors ? `
-        <div class="nl-section-title">Sponsors & Dedications</div>
-        <div class="nl-section-body">${sponsors}</div>
-        ` : ''}
+        ${shiurTopic ? `<div class="nl-section-title">שיעור</div><div class="nl-section-body">${shiurTopic}</div><hr class="nl-divider">` : ''}
+        ${specialShiur ? `<div class="nl-section-title">Special Shiur / Event</div><div class="nl-section-body">${specialShiur}</div><hr class="nl-divider">` : ''}
+        ${sponsors ? `<div class="nl-section-title">Sponsors & Dedications</div><div class="nl-section-body">${sponsors}</div>` : ''}
       </div>
-
       <div class="nl-right">
         <table class="nl-schedule-table">
           <tr><th colspan="2">לוח זמנים לשבת קודש</th></tr>
@@ -797,7 +1148,7 @@ async function renderNewsletter() {
           <tr><td>מנחה ערב שבת</td><td>${minchaErev}</td></tr>
           <tr class="section-break"><td>קבלת שבת</td><td>After Mincha</td></tr>
           <tr><td>Torah & Stories</td><td>${torahStoriesTime}</td></tr>
-          <tr class="bold"><td>שחרית</td><td>8:30 AM</td></tr>
+          <tr class="bold"><td>שחרית</td><td>8:45 AM</td></tr>
           <tr><td>סוף זמן ק״ש (גר״א)</td><td>${fmtTime(shabbosZmanim.shemaGra)}</td></tr>
           <tr><td>סוף זמן ק״ש (מג״א)</td><td>${fmtTime(shabbosZmanim.shemaMGA)}</td></tr>
           <tr class="section-break"><td>חצות</td><td>${fmtTime(shabbosZmanim.chatzos)}</td></tr>
@@ -806,7 +1157,6 @@ async function renderNewsletter() {
           <tr><td>שקיעה</td><td>${shkiah}</td></tr>
           <tr class="bold section-break"><td>מעריב / הבדלה</td><td>${maarivTime}</td></tr>
         </table>
-
         <table class="nl-weekday-table">
           <tr><th colspan="2">Weekday Schedule</th></tr>
           <tr><td>שחרית (Mon-Fri)</td><td>7:00 AM</td></tr>
@@ -815,23 +1165,17 @@ async function renderNewsletter() {
         </table>
       </div>
     </div>
-
     <div class="nl-footer">
       <strong>${CONFIG.shulName} · ${CONFIG.shulNameHe}</strong><br>
-      ${CONFIG.address}<br>
-      ${CONFIG.ravName} · לעילוי נשמת ר׳ יעקב דב שטרנבוך ז״ל
+      ${CONFIG.address}<br>${CONFIG.ravName} · לעילוי נשמת ר׳ יעקב דב שטרנבוך ז״ל
     </div>
   `;
 }
 
-function printNewsletter() {
-  window.print();
-}
+function printNewsletter() { window.print(); }
 
 function saveNewsletterDraft() {
-  const fields = ['nl-mincha-override', 'nl-avos-override', 'nl-minchab-override', 'nl-torahstories-override',
-    'nl-shiur-topic', 'nl-avosubanim-override', 'nl-maariv-override', 'nl-special-shiur',
-    'nl-simcha', 'nl-announcements', 'nl-sponsors', 'nl-seudos'];
+  const fields = ['nl-mincha-override', 'nl-avos-override', 'nl-minchab-override', 'nl-torahstories-override', 'nl-shiur-topic', 'nl-avosubanim-override', 'nl-maariv-override', 'nl-special-shiur', 'nl-simcha', 'nl-announcements', 'nl-sponsors', 'nl-seudos'];
   const draft = {};
   fields.forEach(id => { draft[id] = document.getElementById(id).value; });
   draft._savedAt = new Date().toISOString();
@@ -849,9 +1193,7 @@ function loadNewsletterDraft() {
       const el = document.getElementById(id);
       if (el) el.value = draft[id];
     });
-  } catch (e) {
-    console.error('Error loading draft:', e);
-  }
+  } catch (e) { console.error('Error loading draft:', e); }
 }
 
 let resizeTimer;
