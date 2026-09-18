@@ -1,6 +1,7 @@
 /* ============================================================
    Jewish Calendar & Zmanim — Kehel Zichron Yaakov
    Chestnut Ridge, NY
+   Matches KosherJava NOAA Calculator exactly
    ============================================================ */
 
 // ===== CONFIG =====
@@ -51,7 +52,7 @@ function switchTab(tab) {
 // LOCAL NOAA SOLAR CALCULATOR (matches KosherJava exactly)
 // ============================================================
 
-// FIX 1: Midnight-based Julian Day matching KosherJava (returns xxx.5)
+// Midnight-based Julian Day — matches KosherJava's getJulianDay()
 function toJulianDay(date) {
   let y = date.getFullYear();
   let m = date.getMonth() + 1;
@@ -66,7 +67,7 @@ function toJulianCenturies(jd) {
   return (jd - 2451545.0) / 36525.0;
 }
 
-// FIX 2: Takes Julian Day (jd), not Julian Centuries — uses actual date, not J2000
+// Solar noon using actual JD — matches KosherJava's getSolarNoonUTC()
 function solarNoonUTC(jd, lon) {
   const tnoon = toJulianCenturies(jd + (-lon / 360));
   let eqTime = eqOfTime(tnoon);
@@ -122,22 +123,14 @@ function sunEqOfCenter(t) {
 function degToRad(d) { return d * Math.PI / 180; }
 function radToDeg(r) { return r * 180 / Math.PI; }
 
-/**
- * Calculate sunrise/sunset for a given solar depression angle.
- * Positive angle = below horizon (e.g., 0.833 for standard sunrise/sunset).
- * Returns UTC minutes from midnight.
- */
 function sunriseUTCForAngle(jd, lat, lon, angle, rising) {
-  const noonmin = solarNoonUTC(jd, lon);  // FIX: passes jd directly
+  const noonmin = solarNoonUTC(jd, lon);
   const tnoon = toJulianCenturies(jd + noonmin / 1440.0);
   const decl = sunDeclination(tnoon);
   const hourAngle = hourAngleForAngle(lat, decl, angle);
   if (isNaN(hourAngle)) return NaN;
-  // NOAA formula: sunrise = 720 - 4*(lon + HA) - eqTime
-  //               sunset  = 720 - 4*(lon - HA) - eqTime
   const delta = rising ? hourAngle : -hourAngle;
   const timeUTC = 720 - 4 * (lon + delta) - eqOfTime(tnoon);
-  // Second-pass refinement
   const newt = toJulianCenturies(jd + timeUTC / 1440.0);
   const decl2 = sunDeclination(newt);
   const hourAngle2 = hourAngleForAngle(lat, decl2, angle);
@@ -154,33 +147,28 @@ function hourAngleForAngle(lat, decl, angle) {
   return radToDeg(Math.acos(cosHA));
 }
 
-/**
- * Elevation adjustment: dip angle for elevation.
- * KosherJava uses: Math.toDegrees(Math.acos(earthRadius / (earthRadius + elevationMeters)))
- */
 function elevationAdjustment(elevation) {
-  const earthRadius = 6356900; // meters
+  const earthRadius = 6356900;
   return radToDeg(Math.acos(earthRadius / (earthRadius + elevation)));
 }
 
 /**
  * Get all zmanim for a given date.
+ * Sunrise/sunset at SEA LEVEL (0.833°) — matches KosherJava maps.
  */
 function getZmanim(date) {
   const jd = toJulianDay(date);
-  const tz = getTimezoneOffset(date); // minutes offset from UTC
-  const elevDip = elevationAdjustment(CONFIG.elevation);
-  // Standard geometric zenith adjustments
-  const zenithSunrise = 0.833 + elevDip; // Standard refraction + elevation
-  const zenithSunset = 0.833 + elevDip;
+  const tz = getTimezoneOffset(date);
+
+  // Sea level zenith (standard refraction only, NO elevation adjustment)
+  const seaLevelZenith = 0.833;
 
   function utcToLocal(utcMin) {
     if (isNaN(utcMin)) return null;
-    const local = utcMin - tz;
-    return local;
+    return utcMin - tz;
   }
 
-  // FIX 3: Math.floor instead of Math.round — matches KosherJava truncation
+  // Truncate to minute (Math.floor) — matches KosherJava
   function minutesToDate(min) {
     if (min === null || isNaN(min)) return null;
     const d = new Date(date);
@@ -189,50 +177,57 @@ function getZmanim(date) {
     return d;
   }
 
-  const sunriseMin = utcToLocal(sunriseUTCForAngle(jd, CONFIG.lat, CONFIG.lon, zenithSunrise, true));
-  const sunsetMin = utcToLocal(sunriseUTCForAngle(jd, CONFIG.lat, CONFIG.lon, zenithSunset, false));
-  const noonMin = utcToLocal(solarNoonUTC(jd, CONFIG.lon));  // FIX: passes jd directly
+  // Sea level sunrise & sunset
+  const sunriseMin = utcToLocal(sunriseUTCForAngle(jd, CONFIG.lat, CONFIG.lon, seaLevelZenith, true));
+  const sunsetMin = utcToLocal(sunriseUTCForAngle(jd, CONFIG.lat, CONFIG.lon, seaLevelZenith, false));
+  const noonMin = utcToLocal(solarNoonUTC(jd, CONFIG.lon));
 
-  // Alos Hashachar (72 minutes before sunrise)
-  const alosMin = sunriseMin !== null ? sunriseMin - 72 : null;
+  // Alos Hashachar — 16.1° below horizon
+  const alosMin = utcToLocal(sunriseUTCForAngle(jd, CONFIG.lat, CONFIG.lon, 16.1, true));
 
-  // Misheyakir — 11 degrees below horizon (KosherJava standard)
+  // Misheyakir — 11° below horizon
   const misheyakirMin = utcToLocal(sunriseUTCForAngle(jd, CONFIG.lat, CONFIG.lon, 11, true));
 
-  // Sof Zman Shema — GRA (3 shaos zmanios after sunrise)
+  // GRA shaos zmanios (sea level sunrise to sea level sunset)
   const dayLengthMin = (sunsetMin !== null && sunriseMin !== null) ? sunsetMin - sunriseMin : null;
-  const shaahZmanisMin = dayLengthMin !== null ? dayLengthMin / 12 : null;
+  const shaahGRA = dayLengthMin !== null ? dayLengthMin / 12 : null;
 
-  const shemaGraMin = (sunriseMin !== null && shaahZmanisMin !== null) ? sunriseMin + 3 * shaahZmanisMin : null;
-  const tefillaGraMin = (sunriseMin !== null && shaahZmanisMin !== null) ? sunriseMin + 4 * shaahZmanisMin : null;
+  // MGA 72-minute shaos zmanios
+  const alos72Min = sunriseMin !== null ? sunriseMin - 72 : null;
+  const tzeis72DeriveMin = sunsetMin !== null ? sunsetMin + 72 : null;
+  const dayLengthMGA = (tzeis72DeriveMin !== null && alos72Min !== null) ? tzeis72DeriveMin - alos72Min : null;
+  const shaahMGA = dayLengthMGA !== null ? dayLengthMGA / 12 : null;
 
-  // Sof Zman Shema — MGA (72-minute alos, 3 shaos zmanios)
-  const dayLengthMGA = (sunsetMin !== null && alosMin !== null) ? (sunsetMin + 72) - alosMin : null;
-  const shaahZmanisMGA = dayLengthMGA !== null ? dayLengthMGA / 12 : null;
-  const shemaMGAMin = (alosMin !== null && shaahZmanisMGA !== null) ? alosMin + 3 * shaahZmanisMGA : null;
+  // Sof Zman Shema
+  const shemaGraMin = (sunriseMin !== null && shaahGRA !== null) ? sunriseMin + 3 * shaahGRA : null;
+  const shemaMGAMin = (alos72Min !== null && shaahMGA !== null) ? alos72Min + 3 * shaahMGA : null;
 
-  // Chatzos — solar noon
+  // Sof Zman Tefilla
+  const tefillaGraMin = (sunriseMin !== null && shaahGRA !== null) ? sunriseMin + 4 * shaahGRA : null;
+  const tefillaMGAMin = (alos72Min !== null && shaahMGA !== null) ? alos72Min + 4 * shaahMGA : null;
+
+  // Chatzos — astronomical solar noon
   const chatzosMin = noonMin;
 
-  // Mincha Gedola — chatzos + 0.5 shaah zmanis
-  const minchaGedolaMin = (chatzosMin !== null && shaahZmanisMin !== null) ? chatzosMin + 0.5 * shaahZmanisMin : null;
+  // Mincha Gedola GRA — chatzos + 30 fixed minutes (matches KosherJava maps)
+  const minchaGedolaMin = chatzosMin !== null ? chatzosMin + 30 : null;
 
-  // Mincha Ketana — sunrise + 9.5 shaos zmanios
-  const minchaKetanaMin = (sunriseMin !== null && shaahZmanisMin !== null) ? sunriseMin + 9.5 * shaahZmanisMin : null;
+  // Mincha Ketana — sunrise + 9.5 shaos GRA
+  const minchaKetanaMin = (sunriseMin !== null && shaahGRA !== null) ? sunriseMin + 9.5 * shaahGRA : null;
 
-  // Plag HaMincha — sunrise + 10.75 shaos zmanios
-  const plagMin = (sunriseMin !== null && shaahZmanisMin !== null) ? sunriseMin + 10.75 * shaahZmanisMin : null;
+  // Plag HaMincha GRA — sunrise + 10.75 shaos
+  const plagMin = (sunriseMin !== null && shaahGRA !== null) ? sunriseMin + 10.75 * shaahGRA : null;
 
-  // Shkiah (sunset)
+  // Shkiah (sea level sunset)
   const shkiahMin = sunsetMin;
 
-  // Tzeis — 8.5 degrees below horizon after sunset
+  // Tzeis — 8.5° below horizon
   const tzeisMin = utcToLocal(sunriseUTCForAngle(jd, CONFIG.lat, CONFIG.lon, 8.5, false));
 
-  // Tzeis 72 — 72 minutes after sunset
+  // Tzeis 72 — 72 minutes after sea level sunset
   const tzeis72Min = sunsetMin !== null ? sunsetMin + 72 : null;
 
-  // Candle lighting — 18 minutes before sunset
+  // Candle lighting — 18 minutes before sea level sunset
   const candleLightingMin = sunsetMin !== null ? sunsetMin - 18 : null;
 
   return {
@@ -241,7 +236,8 @@ function getZmanim(date) {
     sunrise: minutesToDate(sunriseMin),
     shemaGra: minutesToDate(shemaGraMin),
     shemaMGA: minutesToDate(shemaMGAMin),
-    tefilla: minutesToDate(tefillaGraMin),
+    tefillaGra: minutesToDate(tefillaGraMin),
+    tefillaMGA: minutesToDate(tefillaMGAMin),
     chatzos: minutesToDate(chatzosMin),
     minchaGedola: minutesToDate(minchaGedolaMin),
     minchaKetana: minutesToDate(minchaKetanaMin),
@@ -250,18 +246,15 @@ function getZmanim(date) {
     tzeis: minutesToDate(tzeisMin),
     tzeis72: minutesToDate(tzeis72Min),
     candleLighting: minutesToDate(candleLightingMin),
-    shaahZmanis: shaahZmanisMin,
+    shaahZmanis: shaahGRA,
   };
 }
 
-/**
- * Get timezone offset in minutes (negative for west of UTC, matching NOAA convention).
- */
 function getTimezoneOffset(date) {
-  return date.getTimezoneOffset(); // JS returns minutes, positive = west
+  return date.getTimezoneOffset();
 }
 
-// ===== TIME FORMATTING =====
+// ===== TIME FORMATTING (H:MM AM/PM — no seconds) =====
 function fmtTime(date) {
   if (!date) return '--:--';
   let h = date.getHours();
@@ -280,7 +273,6 @@ function fmtTime24(date) {
 // HEBREW DATE FUNCTIONS (using Hebcal API for dates/holidays)
 // ============================================================
 
-// Hebrew year string with proper encoding (years > 5400)
 function hebrewYearStr(year) {
   const letters = {1:'א',2:'ב',3:'ג',4:'ד',5:'ה',6:'ו',7:'ז',8:'ח',9:'ט',10:'י',20:'כ',30:'ל',40:'מ',50:'נ',60:'ס',70:'ע',80:'פ',90:'צ',100:'ק',200:'ר',300:'ש',400:'ת'};
   let remainder = year % 1000;
@@ -302,7 +294,6 @@ function hebrewYearStr(year) {
   return str;
 }
 
-// Cache for Hebcal API responses
 const hebcalCache = {};
 
 async function getHebcalData(date) {
@@ -332,9 +323,6 @@ async function getHebrewDate(date) {
   }
 }
 
-// ============================================================
-// HEBCAL MONTHLY DATA (for calendar + holidays + parsha)
-// ============================================================
 async function getHebcalMonthData(year, month) {
   const cacheKey = `month_${year}_${month}`;
   if (hebcalCache[cacheKey]) return hebcalCache[cacheKey];
@@ -354,8 +342,7 @@ async function getHebcalMonthData(year, month) {
 // DAVENING SCHEDULE LOGIC
 // ============================================================
 
-function getDayOfWeek(date) { return date.getDay(); } // 0=Sun, 6=Sat
-
+function getDayOfWeek(date) { return date.getDay(); }
 function isShabbos(date) { return date.getDay() === 6; }
 
 async function isRoshChodesh(date) {
@@ -379,9 +366,7 @@ function isUSHoliday(date) {
 
 function getShabbosMinchaBTime(shkiah) {
   if (!shkiah) return null;
-  const shkiahH = shkiah.getHours();
-  const shkiahM = shkiah.getMinutes();
-  const shkiahTotalMin = shkiahH * 60 + shkiahM;
+  const shkiahTotalMin = shkiah.getHours() * 60 + shkiah.getMinutes();
   if (shkiahTotalMin >= 1135) {
     const d = new Date(shkiah);
     d.setHours(18, 15, 0, 0);
@@ -398,7 +383,6 @@ async function getDaveningSchedule(date, zmanim) {
   const rc = await isRoshChodesh(date);
   const shabbos = isShabbos(date);
   const usHoliday = isUSHoliday(date);
-  const hd = await getHebrewDate(date);
 
   const schedule = { weekday: {}, shabbos: {}, notes: [] };
 
@@ -486,24 +470,27 @@ async function renderZmanim() {
     </div>
   `;
 
+  // Morning times
   const morningEl = document.getElementById('morning-times');
-  morningEl.innerHTML = zmanRow('Alos Hashachar', 'עלות השחר', '72 min before sunrise', zmanim.alos) +
+  morningEl.innerHTML = zmanRow('Alos Hashachar', 'עלות השחר', '16.1° below horizon', zmanim.alos) +
     zmanRow('Misheyakir', 'משיכיר', '11° below horizon', zmanim.misheyakir) +
-    zmanRow('Netz (Sunrise)', 'הנץ החמה', 'Elevation adjusted', zmanim.sunrise, 'highlight') +
-    zmanRow('Sof Zman Shema (GRA)', 'סוף זמן ק״ש גר״א', '3 shaos zmanios', zmanim.shemaGra) +
+    zmanRow('Netz (Sunrise)', 'הנץ החמה', 'Sea level', zmanim.sunrise, 'highlight') +
     zmanRow('Sof Zman Shema (MGA)', 'סוף זמן ק״ש מג״א', '72-minute MGA', zmanim.shemaMGA) +
-    zmanRow('Sof Zman Tefilla', 'סוף זמן תפילה', '4 shaos zmanios', zmanim.tefilla) +
-    zmanRow('Chatzos', 'חצות', 'Solar noon', zmanim.chatzos);
+    zmanRow('Sof Zman Shema (GRA)', 'סוף זמן ק״ש גר״א', 'Sea level', zmanim.shemaGra) +
+    zmanRow('Sof Zman Tefilla (MGA)', 'סוף זמן תפילה מג״א', '72-minute MGA', zmanim.tefillaMGA) +
+    zmanRow('Sof Zman Tefilla (GRA)', 'סוף זמן תפילה גר״א', 'Sea level', zmanim.tefillaGra) +
+    zmanRow('Chatzos', 'חצות', 'Astronomical noon', zmanim.chatzos);
 
+  // Evening times
   const eveningEl = document.getElementById('evening-times');
-  eveningEl.innerHTML = zmanRow('Mincha Gedola', 'מנחה גדולה', 'Earliest mincha', zmanim.minchaGedola) +
-    zmanRow('Mincha Ketana', 'מנחה קטנה', '9.5 shaos', zmanim.minchaKetana) +
-    zmanRow('Plag HaMincha', 'פלג המנחה', '10.75 shaos', zmanim.plag) +
+  eveningEl.innerHTML = zmanRow('Mincha Gedola', 'מנחה גדולה', 'Chatzos + 30 min', zmanim.minchaGedola) +
+    zmanRow('Plag HaMincha', 'פלג המנחה', '10.75 shaos GRA', zmanim.plag) +
     zmanRow('Candle Lighting', 'הדלקת נרות', '18 min before sunset', zmanim.candleLighting) +
-    zmanRow('Shkiah (Sunset)', 'שקיעה', 'Elevation adjusted', zmanim.shkiah, 'sunset') +
+    zmanRow('Shkiah (Sunset)', 'שקיעה', 'Sea level', zmanim.shkiah, 'sunset') +
     zmanRow('Tzeis Hakochavim', 'צאת הכוכבים', '8.5° below horizon', zmanim.tzeis) +
     zmanRow('Tzeis (72 min)', 'ר״ת', '72 min after sunset', zmanim.tzeis72);
 
+  // Davening section
   const daveningEl = document.getElementById('davening-section');
   const sched = await getDaveningSchedule(date, zmanim);
   let daveningHTML = '<h3>🕐 Davening Schedule</h3>';
@@ -841,7 +828,6 @@ function printNewsletter() {
   window.print();
 }
 
-// ===== NEWSLETTER DRAFT SAVE/LOAD =====
 function saveNewsletterDraft() {
   const fields = ['nl-mincha-override', 'nl-avos-override', 'nl-minchab-override', 'nl-torahstories-override',
     'nl-shiur-topic', 'nl-avosubanim-override', 'nl-maariv-override', 'nl-special-shiur',
@@ -868,7 +854,6 @@ function loadNewsletterDraft() {
   }
 }
 
-// ===== WINDOW RESIZE HANDLER =====
 let resizeTimer;
 window.addEventListener('resize', () => {
   clearTimeout(resizeTimer);
