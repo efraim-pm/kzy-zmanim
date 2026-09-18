@@ -1,518 +1,83 @@
-/* ===== VARIABLES & RESET ===== */
-:root {
-  --navy: #1B2A4A;
-  --off-white: #F8F6F1;
-  --gold: #C9A84C;
-  --gold-light: #E8D9A0;
-  --text-dark: #1a1a2e;
-  --text-muted: #505668;
-  --border: #E8E2D5;
-  --card-bg: #FFFFFF;
-  --radius: 12px;
-}
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-body {
-  font-family: 'Inter', sans-serif;
-  background: var(--off-white);
-  color: var(--text-dark);
-  line-height: 1.5;
-}
-
-/* ===== HEADER ===== */
-.site-header {
-  background: linear-gradient(135deg, var(--navy) 0%, #0f1b33 100%);
-  color: #fff;
-  padding: 0;
-  position: relative;
-  overflow: hidden;
-}
-.site-header::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: url('https://b313e8803f7a4150a884-6e0b076a1e92e31c40be44f466689c50.ssl.cf5.rackcdn.com/images/loginid189584/6561383364303238623866326363653038386630373961366666396332313836_31373039323239303132.jpg') center/cover no-repeat;
-  opacity: 0.08;
-}
-.header-inner {
-  position: relative;
-  z-index: 1;
-  max-width: 1360px;
-  margin: 0 auto;
-  padding: 16px 40px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-}
-.brand-section { display: flex; align-items: center; gap: 12px; }
-.brand-icon { font-size: 28px; opacity: 0.9; }
-.brand-title { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 700; }
-.brand-subtitle { font-size: 11px; opacity: 0.7; margin-top: 2px; }
-.header-hebrew { text-align: center; }
-.hebrew-title { font-family: 'Crimson Pro', serif; font-size: 28px; font-weight: 800; display: block; }
-.hebrew-sub { font-size: 11px; opacity: 0.6; display: block; margin-top: 2px; }
-.nav-controls { display: flex; align-items: center; gap: 8px; }
-.today-btn {
-  background: var(--gold);
-  color: var(--navy);
-  border: none;
-  padding: 8px 20px;
-  border-radius: 20px;
-  font-weight: 600;
-  cursor: pointer;
-  font-size: 13px;
-}
-.nav-arrow {
-  background: rgba(255,255,255,0.1);
-  border: 1px solid rgba(255,255,255,0.2);
-  color: #fff;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  cursor: pointer;
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* ===== TAB BAR ===== */
-.tab-bar {
-  background: var(--off-white);
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  gap: 0;
-  padding: 0 40px;
-  max-width: 1440px;
-  margin: 0 auto;
-}
-.tab {
-  background: none;
-  border: none;
-  padding: 14px 24px;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--text-muted);
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-  transition: all 0.2s;
-}
-.tab.active {
-  color: var(--navy);
-  font-weight: 600;
-  border-bottom-color: var(--gold);
-}
-.tab-content { display: none; max-width: 1360px; margin: 0 auto; padding: 24px 40px 40px; }
-.tab-content.active { display: block; }
-
-/* ===== DATE HERO ===== */
-.date-hero {
-  background: var(--card-bg);
-  border-radius: var(--radius);
-  padding: 28px 32px;
-  margin-bottom: 24px;
-  border: 1px solid var(--border);
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  flex-wrap: wrap;
-  gap: 16px;
-}
-.date-hero .date-main { font-family: 'Cormorant Garamond', serif; }
-.date-hero .date-english { font-size: 28px; font-weight: 700; color: var(--navy); line-height: 1.2; }
-.date-hero .date-hebrew { font-family: 'Crimson Pro', serif; font-size: 22px; font-weight: 700; color: var(--navy); margin-top: 4px; }
-.date-hero .date-badges { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
-.date-hero .badge {
-  background: #FFF3E0;
-  color: #E65100;
-  padding: 3px 10px;
-  border-radius: 12px;
-  font-size: 11px;
-  font-weight: 600;
-}
-.date-hero .badge.blue { background: #E3F2FD; color: #1565C0; }
-.date-hero .next-info { text-align: right; }
-.date-hero .next-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
-.date-hero .next-value { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 700; color: var(--navy); }
-
-/* ===== ZMANIM CARDS ===== */
-.zmanim-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
-.zmanim-card {
-  background: var(--card-bg);
-  border-radius: var(--radius);
-  padding: 24px;
-  border: 1px solid var(--border);
-}
-.zmanim-card h3 { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-weight: 700; color: var(--navy); margin-bottom: 16px; }
-.zman-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 12px;
-  border-radius: 8px;
-  transition: background 0.15s;
-}
-.zman-row:hover { background: #f5f3ee; }
-.zman-row.highlight { background: #FFF8E1; border: 1px solid var(--gold-light); }
-.zman-row.sunset { background: #FFF3E0; border: 1px solid #FFCC80; }
-.zman-left { display: flex; align-items: center; gap: 8px; }
-.zman-name-en { font-weight: 500; font-size: 14px; }
-.zman-name-he { font-family: 'Crimson Pro', serif; font-weight: 600; color: var(--gold); font-size: 14px; }
-.zman-desc { font-size: 11px; color: var(--text-muted); }
-.zman-time { font-weight: 700; font-size: 15px; color: var(--navy); font-variant-numeric: tabular-nums; }
-
-/* ===== DAVENING SECTION ===== */
-.davening-section {
-  background: var(--card-bg);
-  border-radius: var(--radius);
-  padding: 28px 32px;
-  border: 1px solid var(--border);
-  margin-bottom: 24px;
-}
-.davening-section h3 {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--navy);
-  margin-bottom: 16px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.daven-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 16px;
-  border-radius: 8px;
-  margin-bottom: 4px;
-}
-.daven-row.shabbos { background: #FFF8E1; border: 1px solid var(--gold-light); }
-.daven-row .daven-left { display: flex; align-items: center; gap: 8px; }
-.daven-row .daven-name { font-weight: 600; font-size: 14px; }
-.daven-row .daven-he { font-family: 'Crimson Pro', serif; color: var(--gold); font-weight: 600; }
-.daven-row .daven-note { font-size: 11px; color: var(--text-muted); }
-.daven-row .daven-time { font-weight: 700; font-size: 15px; color: var(--navy); }
-.davening-section h4 {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 16px;
-  margin: 20px 0 12px;
-  color: var(--navy);
-}
-
-/* ===== ZMANIM FOOTER ===== */
-.zmanim-footer {
-  display: flex;
-  justify-content: space-between;
-  font-size: 12px;
-  color: var(--text-muted);
-  padding: 12px 0;
-  border-top: 1px solid var(--border);
-}
-.zmanim-footer a { color: var(--gold); text-decoration: none; }
-
-/* ===== CALENDAR ===== */
-.calendar-header {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 16px;
-}
-.calendar-header h2 { font-family: 'Cormorant Garamond', serif; font-size: 22px; color: var(--navy); }
-.calendar-badge {
-  background: var(--gold);
-  color: var(--navy);
-  padding: 4px 12px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 600;
-  margin-left: auto;
-}
-.days-header {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 1px;
-  margin-bottom: 1px;
-}
-.days-header .day-label {
-  text-align: center;
-  font-weight: 600;
-  font-size: 12px;
-  color: var(--text-muted);
-  padding: 8px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-.days-header .day-label.shabbos { background: #FFF8E1; color: var(--gold); border-radius: 8px 8px 0 0; }
-.calendar-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 0.5px;
-  background: var(--border);
-  border: 0.5px solid var(--border);
-  border-radius: 0 0 var(--radius) var(--radius);
-}
+/* Calendar cell layout */
 .cal-cell {
-  background: var(--card-bg);
-  min-height: 155px;
-  padding: 6px 8px;
-  font-size: 10px;
-  position: relative;
-  overflow: hidden;
-}
-.cal-cell.empty { background: #fafaf7; }
-.cal-cell.today { box-shadow: inset 0 0 0 2px var(--gold); }
-.cal-cell.shabbos { background: #FFFDF5; }
-.cal-cell .cell-date { font-weight: 700; font-size: 12px; color: var(--navy); }
-.cal-cell .cell-hebrew { font-family: 'Crimson Pro', serif; font-size: 11px; color: var(--text-muted); }
-.cal-cell .cell-holiday { color: #E65100; font-weight: 600; font-size: 9px; margin-top: 2px; }
-.cal-cell .cell-parsha { color: var(--gold); font-weight: 600; font-size: 9px; }
-.cal-cell .cell-schedule { margin-top: 4px; line-height: 1.4; color: var(--text-muted); font-size: 9px; }
-.cal-cell .cell-schedule strong { color: var(--text-dark); }
-
-/* ===== CALENDAR AGENDA (MOBILE) ===== */
-.calendar-agenda { display: none; }
-.agenda-card {
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 14px 16px;
-  margin-bottom: 8px;
-}
-.agenda-card.today { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold); }
-.agenda-card.shabbos { background: #FFFDF5; border-color: var(--gold-light); }
-.agenda-card .agenda-date { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-.agenda-card .agenda-date .eng { font-weight: 700; font-size: 14px; color: var(--navy); }
-.agenda-card .agenda-date .heb { font-family: 'Crimson Pro', serif; color: var(--text-muted); font-size: 13px; }
-.agenda-card .agenda-holiday { color: #E65100; font-weight: 600; font-size: 12px; margin-bottom: 4px; }
-.agenda-card .agenda-parsha { color: var(--gold); font-weight: 600; font-size: 12px; margin-bottom: 4px; }
-.agenda-card .agenda-schedule { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
-.agenda-card .agenda-schedule strong { color: var(--text-dark); }
-
-/* ===== NEWSLETTER CONTROLS ===== */
-.nl-controls {
-  background: var(--card-bg);
-  border-radius: var(--radius);
-  padding: 28px 32px;
-  border: 1px solid var(--border);
-  margin-bottom: 24px;
-}
-.nl-controls h2 {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--navy);
-  margin-bottom: 4px;
-}
-.nl-hebrew-title { font-family: 'Crimson Pro', serif; color: var(--gold); font-size: 18px; margin-left: 8px; }
-.nl-date-info {
-  background: #FFF8E1;
-  border: 1px solid var(--gold-light);
-  border-radius: 8px;
-  padding: 10px 16px;
-  margin: 16px 0 20px;
-  font-size: 14px;
-  color: var(--navy);
-  font-weight: 500;
-}
-.nl-controls h3 {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 16px;
-  color: var(--navy);
-  margin: 20px 0 12px;
-  padding-bottom: 6px;
-  border-bottom: 1px solid var(--border);
-}
-.nl-override-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 20px; margin-bottom: 8px; }
-.nl-field label { display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; }
-.nl-field input, .nl-field textarea {
-  width: 100%;
-  padding: 8px 12px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  font-size: 13px;
-  font-family: 'Inter', sans-serif;
-  background: #fafaf7;
-}
-.nl-field textarea { resize: vertical; }
-.nl-actions { display: flex; gap: 12px; margin-top: 20px; }
-.nl-btn-primary {
-  background: var(--gold);
-  color: var(--navy);
-  border: none;
-  padding: 10px 24px;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  font-size: 14px;
-}
-.nl-btn-secondary {
-  background: none;
-  border: 1px solid var(--navy);
-  color: var(--navy);
-  padding: 10px 24px;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  font-size: 14px;
-}
-.nl-btn-tertiary {
-  background: none;
-  border: none;
-  color: var(--text-muted);
-  padding: 10px 16px;
-  font-weight: 500;
-  cursor: pointer;
-  font-size: 14px;
-  text-decoration: underline;
-}
-
-/* ===== NEWSLETTER PREVIEW ===== */
-.nl-preview-wrapper { margin-bottom: 40px; }
-.nl-preview-wrapper h3 { font-family: 'Cormorant Garamond', serif; font-size: 18px; color: var(--navy); margin-bottom: 4px; }
-.nl-preview-badge {
-  background: #E8F5E9;
-  color: #2E7D32;
-  padding: 2px 10px;
-  border-radius: 10px;
+  min-height: 180px;
   font-size: 11px;
-  font-weight: 600;
-  font-family: 'Inter', sans-serif;
-  margin-left: 8px;
-}
-.nl-preview-note { font-size: 12px; color: var(--text-muted); margin-bottom: 16px; }
-.nl-page {
-  width: 8.5in;
-  min-height: 11in;
-  background: #fff;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-  border: 1px solid #ddd;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
-  padding: 0.4in 0.5in;
-  margin: 0 auto;
-  font-family: 'Crimson Pro', serif;
-  color: #111;
-  position: relative;
-}
-.nl-placeholder {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 9in;
-  color: var(--text-muted);
-  font-family: 'Inter', sans-serif;
-  font-size: 16px;
 }
 
-/* Newsletter page inner layout */
-.nl-header {
+.cal-header {
+  font-weight: 600;
+  font-size: 11px;
+  padding: 4px 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  direction: ltr;
+}
+
+.cal-divider {
+  border-bottom: 1px solid #d4c9a8;
+  margin: 0 6px;
+}
+
+.cal-times {
+  padding: 4px 6px;
+}
+
+/* Dot leader rows — times left, Hebrew right */
+.cal-time-row {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  padding-bottom: 10px;
-  border-bottom: 2px solid #111;
-  margin-bottom: 16px;
+  align-items: baseline;
+  direction: rtl;
+  padding: 1px 0;
+  background-image: radial-gradient(circle, #c0b89a 0.5px, transparent 0.5px);
+  background-size: 5px 1px;
+  background-repeat: repeat-x;
+  background-position: bottom;
+  margin-bottom: 2px;
+  line-height: 1.4;
 }
-.nl-header .nl-logo { width: 80px; }
-.nl-header .nl-logo img { width: 100%; height: auto; }
-.nl-header .nl-parsha { text-align: center; flex: 1; }
-.nl-header .nl-parsha h1 { font-size: 32px; font-weight: 900; margin: 0; line-height: 1.1; }
-.nl-header .nl-parsha .nl-shul-sub { font-size: 12px; color: #444; font-weight: 600; }
-.nl-header .nl-dates { text-align: right; min-width: 90px; }
-.nl-header .nl-dates .nl-heb-date { font-size: 15px; font-weight: 700; }
-.nl-header .nl-dates .nl-eng-date { font-size: 13px; color: #444; }
-.nl-header .nl-dates .nl-avos-ref { font-size: 11px; color: #666; margin-top: 2px; }
 
-.nl-body { display: flex; gap: 20px; }
-.nl-left { width: 38%; }
-.nl-right { width: 62%; }
+.cal-time-label {
+  font-family: 'Frank Ruhl Libre', 'David', serif;
+  background: #fff;
+  padding-left: 4px;
+  font-size: 10px;
+  white-space: nowrap;
+}
 
-/* Announcement boxes */
-.nl-announce-box {
-  border: 1px solid #111;
-  padding: 8px 10px;
-  margin-bottom: 10px;
+.cal-time-value {
+  direction: ltr;
+  background: #fff;
+  padding-right: 4px;
+  font-size: 10px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.cal-cell.shabbos .cal-time-label,
+.cal-cell.shabbos .cal-time-value {
+  background: #f7f3e8;
+}
+
+.cal-cell.today .cal-time-label,
+.cal-cell.today .cal-time-value {
+  background: #eef0f7;
+}
+
+/* Agenda cards (mobile) */
+.agenda-card .cal-header {
+  font-size: 13px;
+}
+.agenda-card .cal-times {
+  padding: 6px 10px;
+}
+.agenda-card .cal-time-row {
+  font-size: 13px;
+}
+.agenda-card .cal-time-label {
   font-size: 12px;
-  line-height: 1.4;
-  text-align: center;
 }
-.nl-announce-box strong { display: block; font-size: 13px; margin-bottom: 2px; }
-.nl-announce-box.highlight { font-weight: 700; font-size: 13px; }
-.nl-section-title { font-size: 14px; font-weight: 800; text-align: center; margin: 8px 0 4px; }
-.nl-section-body { font-size: 11px; text-align: center; margin-bottom: 8px; line-height: 1.4; }
-.nl-divider { border: none; border-top: 1px solid #999; margin: 6px 20%; }
-.nl-pirkei-avos { text-align: center; margin: 8px 0; }
-.nl-pirkei-avos .pa-title { font-size: 20px; font-weight: 900; }
-.nl-pirkei-avos .pa-time { font-size: 14px; font-weight: 700; }
-
-/* Schedule table */
-.nl-schedule-table { width: 100%; border-collapse: collapse; direction: rtl; font-size: 12px; }
-.nl-schedule-table th { text-align: center; font-size: 14px; font-weight: 800; padding-bottom: 6px; }
-.nl-schedule-table td { padding: 3px 4px; border-bottom: 0.5px solid #ccc; }
-.nl-schedule-table td:first-child { text-align: right; font-weight: 600; }
-.nl-schedule-table td:last-child { text-align: left; font-variant-numeric: tabular-nums; }
-.nl-schedule-table tr.bold td { font-weight: 800; font-size: 13px; }
-.nl-schedule-table tr.section-break td { border-bottom: 1.5px solid #111; }
-
-/* Weekday summary */
-.nl-weekday-table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 12px; }
-.nl-weekday-table th { text-align: center; font-weight: 700; font-size: 12px; padding-bottom: 4px; border-bottom: 1px solid #111; }
-.nl-weekday-table td { padding: 3px 6px; border-bottom: 0.5px solid #ccc; font-size: 11px; }
-
-/* Newsletter footer */
-.nl-footer {
-  text-align: center;
-  padding-top: 10px;
-  border-top: 1px solid #999;
-  margin-top: 12px;
-  font-size: 11px;
-  color: #444;
-  line-height: 1.4;
-}
-.nl-footer strong { color: #111; font-size: 12px; }
-
-/* ===== PRINT STYLES ===== */
-@media print {
-  body { background: #fff; }
-  .site-header, .tab-bar, .nl-controls, .nl-preview-wrapper > h3,
-  .nl-preview-wrapper > p, .nl-preview-badge, .zmanim-footer,
-  #zmanim-tab, #calendar-tab { display: none !important; }
-  .tab-content { display: block !important; padding: 0 !important; max-width: none; }
-  .nl-preview-wrapper { margin: 0; }
-  .nl-page {
-    width: 100%;
-    min-height: auto;
-    border: none;
-    box-shadow: none;
-    padding: 0.3in 0.4in;
-    margin: 0;
-    page-break-inside: avoid;
-  }
-  @page { size: letter portrait; margin: 0.2in; }
-}
-
-/* ===== RESPONSIVE ===== */
-@media (max-width: 1024px) {
-  .header-inner { padding: 12px 20px; }
-  .brand-title { font-size: 18px; }
-  .hebrew-title { font-size: 22px; }
-  .tab-bar { padding: 0 20px; }
-  .tab-content { padding: 16px 20px 32px; }
-  .zmanim-grid { grid-template-columns: 1fr; }
-  .nl-override-grid { grid-template-columns: 1fr; }
-  .nl-page { width: 100%; min-height: auto; padding: 24px; }
-}
-@media (max-width: 768px) {
-  .header-inner { flex-wrap: wrap; padding: 12px 16px; }
-  .header-hebrew { display: none; }
-  .brand-title { font-size: 16px; }
-  .tab { padding: 10px 14px; font-size: 13px; }
-  .tab-content { padding: 12px 16px 24px; }
-  .date-hero { flex-direction: column; align-items: flex-start; padding: 20px; }
-  .days-header { display: none; }
-  .calendar-grid { display: none; }
-  .calendar-agenda { display: block; }
-  .nl-body { flex-direction: column; }
-  .nl-left, .nl-right { width: 100%; }
-  .nl-page { font-size: 11px; }
+.agenda-card .cal-time-value {
+  font-size: 12px;
 }
