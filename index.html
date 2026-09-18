@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Jewish Calendar & Zmanim — Kehel Zichron Yaakov</title>
+  <title>Jewish Calendar & Zmanim — Khael Zichron Yaakov</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Inter:wght@400;500;600;700&family=Crimson+Pro:wght@400;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
@@ -13,10 +13,10 @@
   <header class="site-header">
     <div class="header-inner">
       <div class="brand-section">
-        <div class="brand-icon">&#x2721;</div>
+        <div class="brand-icon">✡</div>
         <div>
-          <h1 class="brand-title">Jewish Calendar & Zmanim</h1>
-          <p class="brand-subtitle">&#x1F4CD; Location: Chestnut Ridge, NY (41.0903°N, 74.0484°W)</p>
+          <h1 class="brand-title">KZY Calendar & Zmanim</h1>
+          <p class="brand-subtitle">📍 Location: Chestnut Ridge, NY (41.0903°N, 74.0484°W)</p>
         </div>
       </div>
       <div class="header-hebrew">
@@ -25,33 +25,33 @@
       </div>
       <div class="nav-controls">
         <button class="today-btn" onclick="goToday()">Today</button>
-        <button class="nav-arrow" onclick="prevDay()">&#x276E;</button>
-        <button class="nav-arrow" onclick="nextDay()">&#x276F;</button>
+        <button class="nav-arrow" onclick="prevDay()">❮</button>
+        <button class="nav-arrow" onclick="nextDay()">❯</button>
       </div>
     </div>
   </header>
 
   <!-- ===== TAB BAR ===== -->
   <nav class="tab-bar">
-    <button class="tab active" data-tab="zmanim" onclick="switchTab('zmanim')">&#x1F54E; Zmanim</button>
-    <button class="tab" data-tab="calendar" onclick="switchTab('calendar')">&#x1F4C5; Calendar</button>
-    <button class="tab" data-tab="newsletter" onclick="switchTab('newsletter')">&#x1F4F0; Newsletter</button>
+    <button class="tab active" data-tab="zmanim" onclick="switchTab('zmanim')">🕎 Zmanim</button>
+    <button class="tab" data-tab="calendar" onclick="switchTab('calendar')">📅 Calendar</button>
+    <button class="tab" data-tab="newsletter" onclick="switchTab('newsletter')">📰 Newsletter</button>
   </nav>
 
   <!-- ===== ZMANIM TAB ===== -->
   <div id="zmanim-tab" class="tab-content active">
     <div class="date-hero" id="date-hero"></div>
+    <div class="davening-section" id="davening-section"></div>
     <div class="zmanim-grid">
       <div class="zmanim-card">
-        <h3>&#x1F305; Morning Times</h3>
+        <h3>🌅 Morning Times</h3>
         <div id="morning-times"></div>
       </div>
       <div class="zmanim-card">
-        <h3>&#x1F307; Afternoon & Evening Times</h3>
+        <h3>🌇 Afternoon & Evening Times</h3>
         <div id="evening-times"></div>
       </div>
     </div>
-    <div class="davening-section" id="davening-section"></div>
     <footer class="zmanim-footer">
       <span>Data sourced from KosherJava.com · Zmanim calculated for Lat 41.0903, Lon -74.0484</span>
       <a href="#">Clarity & Precision in Halacha</a>
@@ -61,9 +61,9 @@
   <!-- ===== CALENDAR TAB ===== -->
   <div id="calendar-tab" class="tab-content">
     <div class="calendar-header">
-      <button class="nav-arrow" onclick="prevMonth()">&#x276E;</button>
+      <button class="nav-arrow" onclick="prevMonth()">❮</button>
       <h2 id="calendar-month-title"></h2>
-      <button class="nav-arrow" onclick="nextMonth()">&#x276F;</button>
+      <button class="nav-arrow" onclick="nextMonth()">❯</button>
       <span class="calendar-badge" id="calendar-badge"></span>
     </div>
     <div class="days-header" id="days-header"></div>
@@ -74,10 +74,10 @@
   <!-- ===== NEWSLETTER TAB ===== -->
   <div id="newsletter-tab" class="tab-content">
     <div class="nl-controls">
-      <h2>Weekly Shabbos Newsletter Generator <span class="nl-hebrew-title">מחולל עלון שבועי</span></h2>
+      <h2>Weekly Shabbos Newsletter Generator </h2>
       <div class="nl-date-info" id="nl-date-info"></div>
 
-      <h3>Halachic Schedule & Shiur Overrides</h3>
+      <h3> Schedule & Shiur Overrides</h3>
       <div class="nl-override-grid">
         <div class="nl-field">
           <label>Mincha Erev Shabbos Override</label>
