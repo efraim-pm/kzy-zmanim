@@ -936,3 +936,34 @@ body {
   .nl-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .nl-schedule-table th, .nl-weekday-table th { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
+
+/* Davening two-column layout */
+.daven-columns {
+  display: flex;
+  gap: 24px;
+}
+
+.daven-col {
+  flex: 1;
+  min-width: 0;
+}
+
+.daven-col h4 {
+  text-align: center;
+  background: var(--navy);
+  color: white;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 8px;
+  font-family: 'Frank Ruhl Libre', serif;
+  font-size: 15px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+@media (max-width: 768px) {
+  .daven-columns {
+    flex-direction: column;
+    gap: 16px;
+  }
+}
