@@ -1,9 +1,453 @@
-/* Calendar cell layout */
-.cal-cell {
-  min-height: 180px;
-  font-size: 11px;
+/* ============================================================
+   Jewish Calendar & Zmanim — Kehel Zichron Yaakov
+   Complete Stylesheet
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap');
+
+/* ===== RESET & BASE ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --navy: #1a2744;
+  --navy-light: #2a3a5c;
+  --gold: #c9a84c;
+  --gold-light: #d4c9a8;
+  --cream: #f7f3e8;
+  --off-white: #fafaf7;
+  --text-primary: #1a2744;
+  --text-secondary: #5a6478;
+  --border: #e2ddd0;
+  --shadow: 0 2px 8px rgba(26, 39, 68, 0.08);
+  --shadow-lg: 0 4px 16px rgba(26, 39, 68, 0.12);
+  --radius: 10px;
+  --radius-sm: 6px;
 }
 
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--off-white);
+  color: var(--text-primary);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* ===== HEADER ===== */
+.site-header {
+  background: var(--navy);
+  color: white;
+  padding: 20px 24px;
+  text-align: center;
+}
+
+.site-header h1 {
+  font-family: 'Frank Ruhl Libre', serif;
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.site-header .location {
+  font-size: 13px;
+  opacity: 0.8;
+  margin-bottom: 4px;
+}
+
+.site-header .dedication {
+  font-family: 'Frank Ruhl Libre', serif;
+  font-size: 14px;
+  opacity: 0.7;
+  direction: rtl;
+}
+
+/* ===== NAVIGATION ===== */
+.nav-bar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 24px;
+  background: white;
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.nav-bar .date-nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.nav-bar button {
+  background: var(--navy);
+  color: white;
+  border: none;
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.nav-bar button:hover {
+  background: var(--navy-light);
+}
+
+.nav-bar button.today-btn {
+  background: var(--gold);
+  color: var(--navy);
+  font-weight: 600;
+}
+
+.nav-bar button.today-btn:hover {
+  background: #b8973f;
+}
+
+/* ===== TABS ===== */
+.tab-bar {
+  display: flex;
+  justify-content: center;
+  gap: 0;
+  background: white;
+  border-bottom: 2px solid var(--border);
+}
+
+.tab {
+  padding: 10px 24px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s;
+  user-select: none;
+}
+
+.tab:hover {
+  color: var(--navy);
+  background: var(--cream);
+}
+
+.tab.active {
+  color: var(--navy);
+  border-bottom-color: var(--gold);
+  font-weight: 600;
+}
+
+.tab-content {
+  display: none;
+  padding: 20px 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+/* ===== DATE HERO ===== */
+#date-hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 20px 24px;
+  background: linear-gradient(135deg, var(--navy), var(--navy-light));
+  color: white;
+  border-radius: var(--radius);
+  margin-bottom: 20px;
+}
+
+.date-main .date-english {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.date-main .date-hebrew {
+  font-family: 'Frank Ruhl Libre', serif;
+  font-size: 18px;
+  opacity: 0.9;
+  direction: rtl;
+  margin-top: 4px;
+}
+
+.date-badges {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.badge {
+  background: var(--gold);
+  color: var(--navy);
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'Frank Ruhl Libre', serif;
+}
+
+.badge.blue {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+.next-info {
+  text-align: right;
+  min-width: 140px;
+}
+
+.next-label {
+  font-size: 11px;
+  opacity: 0.7;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-family: 'Frank Ruhl Libre', serif;
+}
+
+.next-value {
+  font-size: 22px;
+  font-weight: 700;
+  font-family: 'Frank Ruhl Libre', serif;
+}
+
+/* ===== ZMANIM SECTIONS ===== */
+.zmanim-section {
+  background: white;
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow);
+}
+
+.zmanim-section h2 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--navy);
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--gold-light);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.zman-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.zman-row:last-child {
+  border-bottom: none;
+}
+
+.zman-row.highlight {
+  background: linear-gradient(90deg, transparent, rgba(201, 168, 76, 0.08));
+  margin: 0 -20px;
+  padding: 10px 20px;
+  border-radius: var(--radius-sm);
+}
+
+.zman-row.sunset {
+  background: linear-gradient(90deg, transparent, rgba(201, 168, 76, 0.15));
+  margin: 0 -20px;
+  padding: 10px 20px;
+  border-radius: var(--radius-sm);
+}
+
+.zman-name-en {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.zman-name-he {
+  font-family: 'Frank Ruhl Libre', serif;
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-left: 8px;
+}
+
+.zman-desc {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.zman-time {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--navy);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ===== DAVENING SCHEDULE ===== */
+#davening-section {
+  background: white;
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow);
+}
+
+#davening-section h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--navy);
+  margin-bottom: 12px;
+  font-family: 'Frank Ruhl Libre', serif;
+  direction: rtl;
+}
+
+#davening-section h4 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gold);
+  margin: 12px 0 8px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-family: 'Frank Ruhl Libre', serif;
+  direction: rtl;
+}
+
+.daven-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px dotted var(--border);
+  direction: rtl;
+}
+
+.daven-row:last-child {
+  border-bottom: none;
+}
+
+.daven-he {
+  font-family: 'Frank Ruhl Libre', serif;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.daven-time {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--navy);
+  direction: ltr;
+  font-variant-numeric: tabular-nums;
+}
+
+.daven-name {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.daven-note {
+  font-size: 11px;
+  color: var(--gold);
+  margin-right: 8px;
+}
+
+.daven-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.daven-row.shabbos {
+  background: var(--cream);
+  margin: 0 -20px;
+  padding: 8px 20px;
+  border-radius: var(--radius-sm);
+}
+
+/* ===== CALENDAR ===== */
+#calendar-month-title {
+  font-size: 20px;
+  font-weight: 600;
+  text-align: center;
+}
+
+#calendar-badge {
+  font-family: 'Frank Ruhl Libre', serif;
+  font-size: 16px;
+  text-align: center;
+  color: var(--gold);
+  margin-bottom: 12px;
+}
+
+.calendar-nav {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.calendar-nav button {
+  background: var(--navy);
+  color: white;
+  border: none;
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 13px;
+}
+
+#days-header {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+  margin-bottom: 1px;
+}
+
+.day-label {
+  text-align: center;
+  font-weight: 600;
+  font-size: 12px;
+  padding: 8px 4px;
+  background: var(--navy);
+  color: white;
+}
+
+.day-label.shabbos {
+  background: var(--navy-light);
+  font-family: 'Frank Ruhl Libre', serif;
+}
+
+#calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+  background: var(--border);
+}
+
+.cal-cell {
+  background: white;
+  min-height: 180px;
+  font-size: 11px;
+  overflow: hidden;
+}
+
+.cal-cell.empty {
+  background: var(--off-white);
+  min-height: 40px;
+}
+
+.cal-cell.today {
+  background: #eef0f7;
+  box-shadow: inset 0 0 0 2px var(--navy);
+}
+
+.cal-cell.shabbos {
+  background: var(--cream);
+}
+
+/* Calendar cell header */
 .cal-header {
   font-weight: 600;
   font-size: 11px;
@@ -12,13 +456,24 @@
   overflow: hidden;
   text-overflow: ellipsis;
   direction: ltr;
+  background: rgba(26, 39, 68, 0.04);
 }
 
+.cal-cell.shabbos .cal-header {
+  background: rgba(201, 168, 76, 0.12);
+}
+
+.cal-cell.today .cal-header {
+  background: rgba(26, 39, 68, 0.08);
+}
+
+/* Calendar cell divider */
 .cal-divider {
-  border-bottom: 1px solid #d4c9a8;
-  margin: 0 6px;
+  border-bottom: 1px solid var(--gold-light);
+  margin: 0;
 }
 
+/* Calendar times area */
 .cal-times {
   padding: 4px 6px;
 }
@@ -30,17 +485,17 @@
   align-items: baseline;
   direction: rtl;
   padding: 1px 0;
-  background-image: radial-gradient(circle, #c0b89a 0.5px, transparent 0.5px);
+  background-image: radial-gradient(circle, var(--gold-light) 0.5px, transparent 0.5px);
   background-size: 5px 1px;
   background-repeat: repeat-x;
-  background-position: bottom;
+  background-position: center;
   margin-bottom: 2px;
   line-height: 1.4;
 }
 
 .cal-time-label {
-  font-family: 'Frank Ruhl Libre', 'David', serif;
-  background: #fff;
+  font-family: 'Frank Ruhl Libre', serif;
+  background: white;
   padding-left: 4px;
   font-size: 10px;
   white-space: nowrap;
@@ -48,16 +503,18 @@
 
 .cal-time-value {
   direction: ltr;
-  background: #fff;
+  background: white;
   padding-right: 4px;
   font-size: 10px;
   font-weight: 500;
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
+/* Match backgrounds for dot leader visibility */
 .cal-cell.shabbos .cal-time-label,
 .cal-cell.shabbos .cal-time-value {
-  background: #f7f3e8;
+  background: var(--cream);
 }
 
 .cal-cell.today .cal-time-label,
@@ -65,19 +522,417 @@
   background: #eef0f7;
 }
 
-/* Agenda cards (mobile) */
+/* Old calendar styles (kept for backwards compat) */
+.cell-date {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--navy);
+}
+
+.cell-hebrew {
+  font-family: 'Frank Ruhl Libre', serif;
+  font-size: 11px;
+  color: var(--text-secondary);
+  direction: rtl;
+}
+
+.cell-holiday {
+  font-size: 10px;
+  color: var(--gold);
+  font-weight: 600;
+  font-family: 'Frank Ruhl Libre', serif;
+}
+
+.cell-parsha {
+  font-size: 10px;
+  color: var(--navy-light);
+  font-family: 'Frank Ruhl Libre', serif;
+}
+
+.cell-schedule {
+  font-size: 10px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+/* ===== AGENDA VIEW (mobile) ===== */
+#calendar-agenda {
+  display: none;
+}
+
+.agenda-card {
+  background: white;
+  border-radius: var(--radius);
+  padding: 0;
+  margin-bottom: 8px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.agenda-card.today {
+  box-shadow: inset 0 0 0 2px var(--navy), var(--shadow);
+  background: #eef0f7;
+}
+
+.agenda-card.shabbos {
+  background: var(--cream);
+}
+
 .agenda-card .cal-header {
   font-size: 13px;
+  padding: 8px 12px;
 }
+
 .agenda-card .cal-times {
-  padding: 6px 10px;
+  padding: 6px 12px 10px;
 }
+
 .agenda-card .cal-time-row {
   font-size: 13px;
+  margin-bottom: 3px;
 }
+
 .agenda-card .cal-time-label {
   font-size: 12px;
+  background: white;
 }
+
 .agenda-card .cal-time-value {
   font-size: 12px;
+  background: white;
+}
+
+.agenda-card.today .cal-time-label,
+.agenda-card.today .cal-time-value {
+  background: #eef0f7;
+}
+
+.agenda-card.shabbos .cal-time-label,
+.agenda-card.shabbos .cal-time-value {
+  background: var(--cream);
+}
+
+.agenda-date {
+  display: flex;
+  justify-content: space-between;
+}
+
+.agenda-holiday {
+  font-family: 'Frank Ruhl Libre', serif;
+  color: var(--gold);
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.agenda-parsha {
+  font-family: 'Frank Ruhl Libre', serif;
+  color: var(--navy-light);
+  font-size: 13px;
+}
+
+.agenda-schedule {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* ===== NEWSLETTER ===== */
+.newsletter-controls {
+  background: white;
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow);
+}
+
+.newsletter-controls h3 {
+  font-size: 16px;
+  margin-bottom: 12px;
+  color: var(--navy);
+}
+
+.nl-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.nl-field label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: var(--text-secondary);
+}
+
+.nl-field input,
+.nl-field textarea {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-family: inherit;
+}
+
+.nl-field textarea {
+  min-height: 60px;
+  resize: vertical;
+}
+
+.nl-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.nl-actions button {
+  padding: 8px 20px;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.nl-actions .btn-primary {
+  background: var(--navy);
+  color: white;
+}
+
+.nl-actions .btn-secondary {
+  background: var(--cream);
+  color: var(--navy);
+  border: 1px solid var(--border);
+}
+
+.nl-actions .btn-print {
+  background: var(--gold);
+  color: var(--navy);
+}
+
+/* Newsletter Page */
+#nl-page {
+  background: white;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0;
+  box-shadow: var(--shadow-lg);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.nl-placeholder {
+  padding: 40px;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.nl-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  background: var(--navy);
+  color: white;
+}
+
+.nl-logo img {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+}
+
+.nl-parsha {
+  text-align: center;
+  flex: 1;
+}
+
+.nl-parsha h1 {
+  font-family: 'Frank Ruhl Libre', serif;
+  font-size: 28px;
+  direction: rtl;
+}
+
+.nl-shul-sub {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.nl-dates {
+  text-align: right;
+  font-family: 'Frank Ruhl Libre', serif;
+}
+
+.nl-heb-date {
+  font-size: 14px;
+  direction: rtl;
+}
+
+.nl-eng-date {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.nl-avos-ref {
+  font-size: 13px;
+  color: var(--gold);
+  margin-top: 4px;
+  direction: rtl;
+}
+
+.nl-body {
+  display: flex;
+  gap: 20px;
+  padding: 20px 24px;
+}
+
+.nl-left {
+  flex: 1;
+}
+
+.nl-right {
+  width: 280px;
+}
+
+.nl-announce-box {
+  background: var(--cream);
+  border-left: 3px solid var(--gold);
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  font-size: 13px;
+}
+
+.nl-announce-box.highlight {
+  background: #fff8e7;
+  border-left-color: #e6a817;
+}
+
+.nl-section-title {
+  font-family: 'Frank Ruhl Libre', serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--navy);
+  direction: rtl;
+  margin-bottom: 4px;
+}
+
+.nl-section-body {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.nl-divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 10px 0;
+}
+
+.nl-pirkei-avos {
+  text-align: center;
+  padding: 8px;
+  background: var(--cream);
+  border-radius: var(--radius-sm);
+  margin-bottom: 10px;
+}
+
+.pa-title {
+  font-family: 'Frank Ruhl Libre', serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--navy);
+}
+
+.pa-time {
+  font-family: 'Frank Ruhl Libre', serif;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.nl-schedule-table,
+.nl-weekday-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  margin-bottom: 12px;
+}
+
+.nl-schedule-table th,
+.nl-weekday-table th {
+  background: var(--navy);
+  color: white;
+  padding: 6px 8px;
+  font-family: 'Frank Ruhl Libre', serif;
+  font-size: 13px;
+  text-align: center;
+}
+
+.nl-schedule-table td,
+.nl-weekday-table td {
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--border);
+  font-family: 'Frank Ruhl Libre', serif;
+}
+
+.nl-schedule-table td:first-child,
+.nl-weekday-table td:first-child {
+  direction: rtl;
+  text-align: right;
+}
+
+.nl-schedule-table td:last-child,
+.nl-weekday-table td:last-child {
+  text-align: left;
+  font-weight: 500;
+}
+
+.nl-schedule-table tr.bold td {
+  font-weight: 700;
+}
+
+.nl-schedule-table tr.section-break td {
+  border-top: 2px solid var(--gold-light);
+}
+
+.nl-footer {
+  text-align: center;
+  padding: 12px 24px;
+  background: var(--cream);
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-family: 'Frank Ruhl Libre', serif;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .site-header h1 { font-size: 22px; }
+  .nav-bar { padding: 10px 16px; gap: 8px; }
+  .tab { padding: 8px 16px; font-size: 13px; }
+  .tab-content { padding: 16px; }
+  #date-hero { flex-direction: column; gap: 12px; }
+  .next-info { text-align: left; }
+  .zman-time { font-size: 16px; }
+  .nl-body { flex-direction: column; }
+  .nl-right { width: 100%; }
+  .nl-form-grid { grid-template-columns: 1fr; }
+
+  #calendar-grid { display: none !important; }
+  #days-header { display: none !important; }
+  #calendar-agenda { display: block !important; }
+}
+
+/* ===== PRINT STYLES ===== */
+@media print {
+  body { background: white; }
+  .site-header, .nav-bar, .tab-bar, .newsletter-controls,
+  #zmanim-tab, #calendar-tab { display: none !important; }
+  #newsletter-tab { display: block !important; }
+  #nl-page {
+    box-shadow: none;
+    max-width: 100%;
+    border-radius: 0;
+  }
+  .nl-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .nl-schedule-table th, .nl-weekday-table th { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
