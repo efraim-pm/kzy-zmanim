@@ -803,16 +803,30 @@ async function renderZmanim() {
 
   const todaySched = getDaveningSchedule(date, zmanim, biEvents);
 
-  // If today is Shabbos/YT, compute sample weekday
+ // If today is Shabbos/YT, find the next non-YT, non-Shabbos day for the weekday column
   let weekdaySched = todaySched;
   if (todaySched.type === 'shabbos' || todaySched.type === 'yomtov') {
-    const sampleDay = new Date(date);
-    sampleDay.setDate(sampleDay.getDate() + (date.getDay() === 6 ? 1 : 2));
-    const sampleZmanim = getZmanim(sampleDay);
-    const sampleDateStr = sampleDay.toISOString().split('T')[0];
-    const sampleBi = await getHebcalDataBilingual(sampleDay);
-    const sampleEvents = sampleBi && sampleBi.items ? sampleBi.items.filter(i => i.date === sampleDateStr || (i.date && i.date.startsWith(sampleDateStr))) : [];
-    weekdaySched = getDaveningSchedule(sampleDay, sampleZmanim, sampleEvents);
+    let sampleDay = new Date(date);
+    let found = false;
+    for (let attempt = 1; attempt <= 10; attempt++) {
+      sampleDay.setDate(sampleDay.getDate() + 1);
+      if (sampleDay.getDay() === 6) continue; // skip Shabbos
+      const sampleDateStr = sampleDay.toISOString().split('T')[0];
+      const sampleBi = await getHebcalDataBilingual(sampleDay);
+      const sampleEvents = sampleBi && sampleBi.items ? sampleBi.items.filter(i => i.date === sampleDateStr || (i.date && i.date.startsWith(sampleDateStr))) : [];
+      if (checkIsYomTov(sampleEvents)) continue; // skip YT days
+      const sampleZmanim = getZmanim(sampleDay);
+      weekdaySched = getDaveningSchedule(sampleDay, sampleZmanim, sampleEvents);
+      found = true;
+      break;
+    }
+    if (!found) {
+      // Fallback: use a day 10 days out
+      const fallback = new Date(date);
+      fallback.setDate(fallback.getDate() + 10);
+      const fbZmanim = getZmanim(fallback);
+      weekdaySched = getDaveningSchedule(fallback, fbZmanim, []);
+    }
   }
 
   // Shacharis rows
