@@ -3,152 +3,290 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Jewish Calendar & Zmanim — Khael Zichron Yaakov</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Inter:wght@400;500;600;700&family=Crimson+Pro:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+
+  <title>Jewish Calendar &amp; Zmanim — Kehel Zichron Yaakov</title>
+
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js" defer></script>
 </head>
+
 <body>
-  <!-- ===== HEADER ===== -->
   <header class="site-header">
-    <div class="header-inner">
-      <div class="brand-section">
-        <div class="brand-icon">✡</div>
-        <div>
-          <h1 class="brand-title">KZY Calendar & Zmanim</h1>
-          <p class="brand-subtitle">📍 Location: Chestnut Ridge, NY (41.0903°N, 74.0484°W)</p>
-        </div>
-      </div>
-      <div class="header-hebrew">
-        <span class="hebrew-title">קהל זכרון יעקב</span>
-        <span class="hebrew-sub">ע״ש ר׳ יעקב דב שטרנבוך ז״ל</span>
-      </div>
-      <div class="nav-controls">
-        <button class="today-btn" onclick="goToday()">Today</button>
-        <button class="nav-arrow" onclick="prevDay()">❮</button>
-        <button class="nav-arrow" onclick="nextDay()">❯</button>
-      </div>
+    <h1>Jewish Calendar &amp; Zmanim</h1>
+    <div class="location">Chestnut Ridge, NY</div>
+    <div class="dedication">
+      קהל זכרון יעקב ע״ש ר׳ יעקב דב שטרנבוך ז״ל
     </div>
   </header>
 
-  <!-- ===== TAB BAR ===== -->
-  <nav class="tab-bar">
-    <button class="tab active" data-tab="zmanim" onclick="switchTab('zmanim')">🕎 Zmanim</button>
-    <button class="tab" data-tab="calendar" onclick="switchTab('calendar')">📅 Calendar</button>
-    <button class="tab" data-tab="newsletter" onclick="switchTab('newsletter')">📰 Newsletter</button>
+  <nav class="nav-bar" aria-label="Date navigation">
+    <div class="date-nav">
+      <button
+        type="button"
+        class="today-btn"
+        onclick="goToday()"
+      >
+        Today
+      </button>
+
+      <button
+        type="button"
+        onclick="prevDay()"
+        aria-label="Previous day"
+      >
+        ‹
+      </button>
+
+      <button
+        type="button"
+        onclick="nextDay()"
+        aria-label="Next day"
+      >
+        ›
+      </button>
+    </div>
   </nav>
 
-  <!-- ===== ZMANIM TAB ===== -->
-  <div id="zmanim-tab" class="tab-content active">
-    <div class="date-hero" id="date-hero"></div>
-    <div class="davening-section" id="davening-section"></div>
-    <div class="zmanim-grid">
-      <div class="zmanim-card">
-        <h3>🌅 Morning Times</h3>
-        <div id="morning-times"></div>
-      </div>
-      <div class="zmanim-card">
-        <h3>🌇 Afternoon & Evening Times</h3>
-        <div id="evening-times"></div>
-      </div>
-    </div>
-    <footer class="zmanim-footer">
-      <span>Data sourced from KosherJava.com · Zmanim calculated for Lat 41.0903, Lon -74.0484</span>
-      <a href="#">Clarity & Precision in Halacha</a>
-    </footer>
-  </div>
-
-  <!-- ===== CALENDAR TAB ===== -->
-  <div id="calendar-tab" class="tab-content">
-    <div class="calendar-header">
-      <button class="nav-arrow" onclick="prevMonth()">❮</button>
-      <h2 id="calendar-month-title"></h2>
-      <button class="nav-arrow" onclick="nextMonth()">❯</button>
-      <span class="calendar-badge" id="calendar-badge"></span>
-    </div>
-    <div class="days-header" id="days-header"></div>
-    <div class="calendar-grid" id="calendar-grid"></div>
-    <div class="calendar-agenda" id="calendar-agenda"></div>
-  </div>
-
-  <!-- ===== NEWSLETTER TAB ===== -->
-  <div id="newsletter-tab" class="tab-content">
-    <div class="nl-controls">
-      <h2>Weekly Shabbos Newsletter Generator </h2>
-      <div class="nl-date-info" id="nl-date-info"></div>
-
-      <h3> Schedule & Shiur Overrides</h3>
-      <div class="nl-override-grid">
-        <div class="nl-field">
-          <label>Mincha Erev Shabbos Override</label>
-          <input type="text" id="nl-mincha-override" placeholder="Auto-calculated">
-        </div>
-        <div class="nl-field">
-          <label>Pirkei Avos Chapter Override</label>
-          <input type="text" id="nl-avos-override" placeholder="Auto: פרק א,ב">
-        </div>
-        <div class="nl-field">
-          <label>Shabbos Mincha ב Override</label>
-          <input type="text" id="nl-minchab-override" placeholder="Auto: 6:15 PM">
-        </div>
-        <div class="nl-field">
-          <label>Torah & Stories Time Override</label>
-          <input type="text" id="nl-torahstories-override" placeholder="Auto: 9:45 AM">
-        </div>
-        <div class="nl-field">
-          <label>Shiur Topic Override</label>
-          <input type="text" id="nl-shiur-topic" placeholder="Enter shiur topic...">
-        </div>
-        <div class="nl-field">
-          <label>Avos UBanim Time Override</label>
-          <input type="text" id="nl-avosubanim-override" placeholder="Auto-calculated">
-        </div>
-        <div class="nl-field">
-          <label>Nightly Maariv Time Override</label>
-          <input type="text" id="nl-maariv-override" placeholder="Auto: 8:30">
-        </div>
-        <div class="nl-field">
-          <label>Special Shiur Override</label>
-          <input type="text" id="nl-special-shiur" placeholder="Enter special shiur or event...">
-        </div>
-      </div>
-
-      <h3>Announcements & Dedications</h3>
-      <div class="nl-override-grid">
-        <div class="nl-field">
-          <label>Simcha / Mazel Tov Announcements</label>
-          <textarea id="nl-simcha" rows="3" placeholder="e.g., The Simons family invites everyone to a Kiddush..."></textarea>
-        </div>
-        <div class="nl-field">
-          <label>General Announcements</label>
-          <textarea id="nl-announcements" rows="3" placeholder="e.g., Beginning this week, the 2nd Mincha on Friday..."></textarea>
-        </div>
-        <div class="nl-field">
-          <label>Sponsor Dedications</label>
-          <textarea id="nl-sponsors" rows="3" placeholder="e.g., Sponsored by the Moeller family in honor of..."></textarea>
-        </div>
-        <div class="nl-field">
-          <label>Shalosh Seudos Sponsor</label>
-          <textarea id="nl-seudos" rows="3" placeholder="e.g., Sponsored anonymously in honor of..."></textarea>
-        </div>
-      </div>
-
-      <div class="nl-actions">
-        <button class="nl-btn-primary" onclick="renderNewsletter()">Generate Preview</button>
-        <button class="nl-btn-secondary" onclick="printNewsletter()">Print Newsletter (PDF)</button>
-        <button class="nl-btn-tertiary" onclick="saveNewsletterDraft()">Save Draft</button>
-      </div>
+  <nav class="tab-bar" aria-label="Primary navigation">
+    <div
+      class="tab active"
+      data-tab="zmanim"
+      onclick="switchTab('zmanim')"
+    >
+      ☀ Zmanim
     </div>
 
-    <div class="nl-preview-wrapper">
-      <h3>Live Print Preview <span class="nl-preview-badge">Draft Preview</span></h3>
-      <p class="nl-preview-note">Standard US Letter Size 8.5" × 11" Printable Layout</p>
-      <div class="nl-page" id="nl-page">
-        <div class="nl-placeholder">Click "Generate Preview" to build the newsletter</div>
-      </div>
+    <div
+      class="tab"
+      data-tab="calendar"
+      onclick="switchTab('calendar')"
+    >
+      🗓 Calendar
     </div>
-  </div>
 
-  <script src="app.js"></script>
+    <div
+      class="tab"
+      data-tab="newsletter"
+      onclick="switchTab('newsletter')"
+    >
+      📰 Newsletter
+    </div>
+  </nav>
+
+  <main>
+    <!-- =====================================================
+         ZMANIM
+         ===================================================== -->
+    <section id="zmanim-tab" class="tab-content active">
+      <div id="date-hero"></div>
+
+      <!-- Combined compact morning and evening zmanim -->
+      <section class="zmanim-section zmanim-combined">
+        <h2>☀ Zmanim / זמנים</h2>
+
+        <div class="zmanim-columns">
+          <div
+            id="morning-times"
+            class="zmanim-list"
+            aria-label="Morning zmanim"
+          ></div>
+
+          <div
+            id="evening-times"
+            class="zmanim-list"
+            aria-label="Afternoon and evening zmanim"
+          ></div>
+        </div>
+      </section>
+
+      <section
+        id="davening-section"
+        aria-label="Davening schedule"
+      ></section>
+    </section>
+
+    <!-- =====================================================
+         CALENDAR
+         ===================================================== -->
+    <section id="calendar-tab" class="tab-content">
+      <div class="calendar-nav">
+        <button
+          type="button"
+          onclick="prevMonth()"
+          aria-label="Previous month"
+        >
+          ‹
+        </button>
+
+        <div>
+          <div id="calendar-month-title"></div>
+          <div id="calendar-badge"></div>
+        </div>
+
+        <button
+          type="button"
+          onclick="nextMonth()"
+          aria-label="Next month"
+        >
+          ›
+        </button>
+      </div>
+
+      <div id="days-header"></div>
+      <div id="calendar-grid"></div>
+      <div id="calendar-agenda"></div>
+    </section>
+
+    <!-- =====================================================
+         NEWSLETTER
+         ===================================================== -->
+    <section id="newsletter-tab" class="tab-content">
+      <section class="newsletter-controls">
+        <h3>Newsletter Generator</h3>
+        <div id="nl-date-info"></div>
+
+        <div class="nl-form-grid">
+          <div class="nl-field">
+            <label for="nl-mincha-override">
+              Erev Shabbos Mincha override
+            </label>
+            <input
+              id="nl-mincha-override"
+              type="text"
+              placeholder="Automatic"
+            >
+          </div>
+
+          <div class="nl-field">
+            <label for="nl-minchab-override">
+              Shabbos Mincha B override
+            </label>
+            <input
+              id="nl-minchab-override"
+              type="text"
+              placeholder="Automatic"
+            >
+          </div>
+
+          <div class="nl-field">
+            <label for="nl-maariv-override">
+              Maariv override
+            </label>
+            <input
+              id="nl-maariv-override"
+              type="text"
+              placeholder="Automatic"
+            >
+          </div>
+
+          <div class="nl-field">
+            <label for="nl-torahstories-override">
+              Torah &amp; Stories time
+            </label>
+            <input
+              id="nl-torahstories-override"
+              type="text"
+              placeholder="9:45 AM"
+            >
+          </div>
+
+          <div class="nl-field">
+            <label for="nl-avos-override">
+              Pirkei Avos chapter
+            </label>
+            <input
+              id="nl-avos-override"
+              type="text"
+              placeholder="Automatic"
+            >
+          </div>
+
+          <div class="nl-field">
+            <label for="nl-avosubanim-override">
+              Avos Ubanim
+            </label>
+            <input
+              id="nl-avosubanim-override"
+              type="text"
+            >
+          </div>
+
+          <div class="nl-field">
+            <label for="nl-shiur-topic">
+              Shiur topic
+            </label>
+            <textarea id="nl-shiur-topic"></textarea>
+          </div>
+
+          <div class="nl-field">
+            <label for="nl-special-shiur">
+              Special shiur or event
+            </label>
+            <textarea id="nl-special-shiur"></textarea>
+          </div>
+
+          <div class="nl-field">
+            <label for="nl-simcha">
+              Simcha announcement
+            </label>
+            <textarea id="nl-simcha"></textarea>
+          </div>
+
+          <div class="nl-field">
+            <label for="nl-announcements">
+              General announcements
+            </label>
+            <textarea id="nl-announcements"></textarea>
+          </div>
+
+          <div class="nl-field">
+            <label for="nl-sponsors">
+              Sponsors and dedications
+            </label>
+            <textarea id="nl-sponsors"></textarea>
+          </div>
+
+          <div class="nl-field">
+            <label for="nl-seudos">
+              Seudos information
+            </label>
+            <textarea id="nl-seudos"></textarea>
+          </div>
+        </div>
+
+        <div class="nl-actions">
+          <button
+            type="button"
+            class="btn-primary"
+            onclick="renderNewsletter()"
+          >
+            Generate Newsletter
+          </button>
+
+          <button
+            type="button"
+            class="btn-secondary"
+            onclick="saveNewsletterDraft()"
+          >
+            Save Draft
+          </button>
+
+          <button
+            type="button"
+            class="btn-print"
+            onclick="printNewsletter()"
+          >
+            Print
+          </button>
+        </div>
+      </section>
+
+      <section id="nl-page">
+        <div class="nl-placeholder">
+          Complete the form and select “Generate Newsletter.”
+        </div>
+      </section>
+    </section>
+  </main>
 </body>
 </html>
