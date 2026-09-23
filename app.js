@@ -637,7 +637,7 @@ async function getHebcalData(date) {
   const key = date.toISOString().split('T')[0];
   if (hebcalCache[key]) return hebcalCache[key];
   try {
-    const url = `https://www.hebcal.com/hebcal?v=1&cfg=json&year=${date.getFullYear()}&month=${date.getMonth() + 1}&day=${date.getDate()}&geo=pos&latitude=${CONFIG.lat}&longitude=${CONFIG.lon}&tzid=${CONFIG.tzid}&M=on&s=on&D=on&d=on&o=on&F=on&lg=he`;
+    const url = `https://www.hebcal.com/hebcal?v=1&cfg=json&year=${date.getFullYear()}&month=${date.getMonth() + 1}&day=${date.getDate()}&geo=pos&latitude=${CONFIG.lat}&longitude=${CONFIG.lon}&tzid=${CONFIG.tzid}&M=on&s=on&D=on&d=on&o=on&&lg=he`;
     const resp = await fetch(url);
     const data = await resp.json();
     hebcalCache[key] = data;
@@ -652,7 +652,7 @@ async function getHebcalDataBilingual(date) {
   const key = 'bi_' + date.toISOString().split('T')[0];
   if (hebcalCache[key]) return hebcalCache[key];
   try {
-    const url = `https://www.hebcal.com/hebcal?v=1&cfg=json&year=${date.getFullYear()}&month=${date.getMonth() + 1}&day=${date.getDate()}&geo=pos&latitude=${CONFIG.lat}&longitude=${CONFIG.lon}&tzid=${CONFIG.tzid}&M=on&s=on&D=on&d=on&o=on&F=on`;
+    const url = `https://www.hebcal.com/hebcal?v=1&cfg=json&year=${date.getFullYear()}&month=${date.getMonth() + 1}&day=${date.getDate()}&geo=pos&latitude=${CONFIG.lat}&longitude=${CONFIG.lon}&tzid=${CONFIG.tzid}&ss=on&s=on&D=on&d=on&o=on&`;
     const resp = await fetch(url);
     const data = await resp.json();
     hebcalCache[key] = data;
@@ -682,7 +682,7 @@ async function getHebcalMonthData(year, month) {
   const cacheKey = `month_${year}_${month}`;
   if (hebcalCache[cacheKey]) return hebcalCache[cacheKey];
   try {
-    const url = `https://www.hebcal.com/hebcal?v=1&cfg=json&year=${year}&month=${month + 1}&geo=pos&latitude=${CONFIG.lat}&longitude=${CONFIG.lon}&tzid=${CONFIG.tzid}&M=on&s=on&D=on&d=on&o=on&F=on&lg=he&c=on`;
+    const url = `https://www.hebcal.com/hebcal?v=1&cfg=json&year=${year}&month=${month + 1}&geo=pos&latitude=${CONFIG.lat}&longitude=${CONFIG.lon}&tzid=${CONFIG.tzid}&ss=on&s=on&D=on&d=on&o=on&&lg=he&c=on`;
     const resp = await fetch(url);
     const data = await resp.json();
     hebcalCache[cacheKey] = data;
@@ -697,7 +697,7 @@ async function getHebcalMonthDataBilingual(year, month) {
   const cacheKey = `month_bi_${year}_${month}`;
   if (hebcalCache[cacheKey]) return hebcalCache[cacheKey];
   try {
-    const url = `https://www.hebcal.com/hebcal?v=1&cfg=json&year=${year}&month=${month + 1}&geo=pos&latitude=${CONFIG.lat}&longitude=${CONFIG.lon}&tzid=${CONFIG.tzid}&M=on&s=on&D=on&d=on&o=on&F=on&c=on`;
+    const url = `https://www.hebcal.com/hebcal?v=1&cfg=json&year=${year}&month=${month + 1}&geo=pos&latitude=${CONFIG.lat}&longitude=${CONFIG.lon}&tzid=${CONFIG.tzid}&ss=on&s=on&D=on&d=on&o=on&&c=on`;
     const resp = await fetch(url);
     const data = await resp.json();
     hebcalCache[cacheKey] = data;
