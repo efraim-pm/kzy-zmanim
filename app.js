@@ -740,3 +740,286 @@ function getDayLabel(date) {
 	return dayNamesHeb[date.getDay()];
 }
 async function renderZmanim() {
+	const e = currentDate,
+		t = getZmanim(e),
+		n = await getHebrewDate(e),
+		a = await getHebcalData(e),
+		i = await getHebcalDataBilingual(e),
+		s = document.getElementById("date-hero");
+	let o = e.toLocaleDateString("en-US", {
+		weekday: "long",
+		year: "numeric",
+		month: "long",
+		day: "numeric"
+	});
+	o = o.replace("Saturday", "שבת");
+	let l = n ? n.hebrew : "",
+		r = "";
+	if (a && a.items) {
+		const t = e.toISOString().split("T")[0];
+		a.items.filter(e => e.date === t || e.date && e.date.startsWith(t)).forEach(e => {
+			"holiday" === e.category || "roshchodesh" === e.category ? r += `<span class="badge">${e.title}</span>` : "parashat" === e.category && (r += `<span class="badge blue">${e.title}</span>`)
+		})
+	}
+	let c = new Date(e);
+	for (; 6 !== c.getDay();) c.setDate(c.getDate() + 1);
+	const h = getZmanim(c);
+	s.innerHTML = `<div class="date-main"><div class="date-english">${o}</div><div class="date-hebrew">${l}</div><div class="date-badges">${r}</div></div><div class="next-info"><div class="next-label">הדלקת נרות</div><div class="next-value">${fmtTime(h.candleLighting)}</div><div class="next-label" style="margin-top:8px">שקיעה</div><div class="next-value">${fmtTime(h.shkiah)}</div></div>`;
+	document.getElementById("morning-times").innerHTML = zmanRow("Alos Hashachar", "עלות השחר", "16.1° below horizon", t.alos) + zmanRow("Misheyakir", "משיכיר", "11° below horizon", t.misheyakir) + zmanRow("Netz (Sunrise)", "הנץ החמה", "Sea level", t.sunrise, "highlight") + zmanRow("Sof Zman Shema (MGA)", "סוף זמן ק״ש מג״א", "72-minute MGA", t.shemaMGA) + zmanRow("Sof Zman Shema (GRA)", "סוף זמן ק״ש גר״א", "Sea level", t.shemaGra) + zmanRow("Sof Zman Tefilla (MGA)", "סוף זמן תפילה מג״א", "16.1° MGA", t.tefillaMGA) + zmanRow("Sof Zman Tefilla (GRA)", "סוף זמן תפילה גר״א", "Sea level", t.tefillaGra) + zmanRow("Chatzos", "חצות", "Astronomical noon", t.chatzos);
+	document.getElementById("evening-times").innerHTML = zmanRow("Mincha Gedola", "מנחה גדולה", "Chatzos + 30 min", t.minchaGedola) + zmanRow("Plag HaMincha", "פלג המנחה", "10.75 shaos GRA", t.plag) + zmanRow("Candle Lighting", "הדלקת נרות", "18 min before sunset", t.candleLighting) + zmanRow("Shkiah (Sunset)", "שקיעה", "Sea level", t.shkiah, "sunset") + zmanRow("Tzeis Hakochavim", "צאת הכוכבים", "8.5° below horizon", t.tzeis) + zmanRow("Tzeis (72 min)", "ר״ת", "72 min after sunset", t.tzeis72);
+	const d = document.getElementById("davening-section"),
+		u = e.toISOString().split("T")[0],
+		m = i && i.items ? i.items.filter(e => e.date === u || e.date && e.date.startsWith(u)) : [],
+		g = ["א", "ב", "ג", "ד", "ה"];
+	let v = "<h3>לוח תפילות</h3>";
+	v += '<div class="daven-columns">', v += '<div class="daven-col">';
+	const f = checkIsCholHamoed(m);
+	v += `<h4>${f?"חול המועד":"חול"}</h4>`;
+	const y = getDaveningSchedule(e, t, m);
+	let M = y;
+	if ("yomtov" === y.type) M = {
+		shacharis: [],
+		mincha: [],
+		maariv: [],
+		type: "yomtov"
+	};
+	else if ("shabbos" === y.type) {
+		let t = new Date(e),
+			n = !1;
+		for (let e = 1; e <= 10; e++) {
+			if (t.setDate(t.getDate() + 1), 6 === t.getDay()) continue;
+			const e = t.toISOString().split("T")[0],
+				a = await getHebcalDataBilingual(t),
+				i = a && a.items ? a.items.filter(t => t.date === e || t.date && t.date.startsWith(e)) : [];
+			if (checkIsYomTov(i) || checkIsCholHamoed(i)) continue;
+			const s = getZmanim(t);
+			M = getDaveningSchedule(t, s, i), n = !0;
+			break
+		}
+		if (!n) M = {
+			shacharis: [],
+			mincha: [],
+			maariv: [],
+			type: "weekday"
+		}
+	}
+	M.shacharis.length > 0 && M.shacharis.forEach((e, t) => {
+		const n = M.shacharis.length > 1 ? `שחרית ${g[t]}` : "שחרית";
+		v += `<div class="daven-row"><span class="daven-he">${n}</span><span class="daven-time">${e}</span></div>`
+	}), M.mincha.length > 0 && M.mincha.forEach((e, t) => {
+		const n = M.mincha.length > 1 ? `מנחה ${g[t]}` : "מנחה";
+		v += `<div class="daven-row"><span class="daven-he">${n}</span><span class="daven-time">${e}</span></div>`
+	}), M.maariv.length > 0 && M.maariv.forEach((e, t) => {
+		const n = M.maariv.length > 1 ? `מעריב ${g[t]}` : "מעריב";
+		v += `<div class="daven-row"><span class="daven-he">${n}</span><span class="daven-time">${e}</span></div>`
+	}), v += "</div>", v += '<div class="daven-col">';
+	const T = await getNextShabbosOrYomTov(e),
+		p = T ? T.date : new Date(e),
+		D = T ? T.events : [],
+		S = getZmanim(p),
+		b = T && T.isYomTov ? getYomTovSchedule(p, S, D) : getShabbosSchedule(p, S, D),
+		w = eventsForDate(await getHebcalData(p), p),
+		I = w.find(e => "holiday" === e.category),
+		$ = w.find(e => "parashat" === e.category),
+		C = T && T.isYomTov && I ? I.title : $ ? $.title : "שבת";
+	v += `<h4>${C}</h4>`, b.erevMincha && b.erevMincha.length > 0 && b.erevMincha.forEach((e, t) => {
+		const n = b.erevMincha.length > 1 ? `מנחה ע״ש ${g[t]}` : "מנחה ע״ש";
+		v += `<div class="daven-row"><span class="daven-he">${n}</span><span class="daven-time">${e}</span></div>`
+	}), b.shacharis.forEach(e => {
+		v += `<div class="daven-row"><span class="daven-he">שחרית</span><span class="daven-time">${e}</span></div>`
+	}), b.mincha.forEach((e, t) => {
+		const n = b.mincha.length > 1 ? `מנחה ${g[t]}` : "מנחה";
+		v += `<div class="daven-row"><span class="daven-he">${n}</span><span class="daven-time">${e}</span></div>`
+	}), b.maariv.forEach(e => {
+		v += `<div class="daven-row"><span class="daven-he">מעריב / הבדלה</span><span class="daven-time">${e}</span></div>`
+	}), v += "</div>", v += "</div>", d.innerHTML = v
+}
+
+function zmanRow(e, t, n, a, i) {
+	return `<div class="zman-row ${i||""}"><div class="zman-left"><div><span class="zman-name-en">${e}</span> <span class="zman-name-he">${t}</span></div><div class="zman-desc">${n}</div></div><div class="zman-time">${fmtTime(a)}</div></div>`
+}
+async function renderCalendar() {
+	const e = calendarMonth.getFullYear(),
+		t = calendarMonth.getMonth(),
+		n = await getHebcalMonthData(e, t),
+		a = await getHebcalMonthDataBilingual(e, t);
+	document.getElementById("calendar-month-title").textContent = calendarMonth.toLocaleDateString("en-US", {
+		month: "long",
+		year: "numeric"
+	});
+	const i = document.getElementById("calendar-badge");
+	if (n && n.items) {
+		const e = n.items.filter(e => "hebdate" === e.category);
+		e.length > 0 && (i.textContent = e[0].hebrew || "")
+	}
+	const s = {},
+		o = {};
+	n && n.items && n.items.forEach(e => {
+		const t = e.date ? e.date.split("T")[0] : null;
+		t && (s[t] || (s[t] = {
+			holidays: [],
+			parsha: null,
+			hebDate: null
+		}), "parashat" === e.category ? s[t].parsha = e.hebrew || e.title : "hebdate" === e.category ? s[t].hebDate = e.hebrew : "holiday" !== e.category || !0 !== e.yomtov && !checkIsCholHamoed([e]) || s[t].holidays.push(e.hebrew || e.title))
+	}), a && a.items && a.items.forEach(e => {
+		const t = e.date ? e.date.split("T")[0] : null;
+		t && (o[t] || (o[t] = []), o[t].push(e))
+	}), window.innerWidth < 768 ? renderCalendarAgenda(e, t, s, o) : renderCalendarGrid(e, t, s, o)
+}
+
+function calTimeLine(e, t) {
+	return `<div class="cal-time-row"><span class="cal-time-value">${t}</span><span class="cal-time-label">${e}</span></div>`
+}
+
+function renderCalendarGrid(e, t, n, a) {
+	const i = document.getElementById("days-header"),
+		s = document.getElementById("calendar-grid");
+	document.getElementById("calendar-agenda").style.display = "none", s.style.display = "grid", i.style.display = "grid";
+	i.innerHTML = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "שבת"].map((e, t) => `<div class="day-label ${6===t?"shabbos":""}">${e}</div>`).join("");
+	const o = new Date(e, t, 1).getDay(),
+		l = new Date(e, t + 1, 0).getDate(),
+		r = (new Date).toISOString().split("T")[0];
+	let c = "";
+	for (let e = 0; e < o; e++) c += '<div class="cal-cell empty"></div>';
+	for (let i = 1; i <= l; i++) {
+		const s = new Date(e, t, i),
+			o = s.toISOString().split("T")[0],
+			l = o === r,
+			h = 6 === s.getDay(),
+			d = n[o] || {},
+			u = a[o] || [],
+			m = [s.toLocaleDateString("en-US", {
+				month: "short",
+				day: "numeric"
+			})];
+		d.hebDate && m.push(d.hebDate), d.holidays && d.holidays.length ? m.push(d.holidays[0]) : h && d.parsha && m.push(d.parsha);
+		const g = m.join(" · "),
+			v = getZmanim(s),
+			f = getDaveningSchedule(s, v, u);
+		let y = "";
+		f.shacharis.length && (y += calTimeLine("שחרית", f.shacharis.join(" / "))), y += calTimeLine("סוף זמן שמע", fmtTimeShort(v.shemaMGA) + " / " + fmtTimeShort(v.shemaGra)), y += calTimeLine("סוף זמן תפילה", fmtTimeShort(v.tefillaMGA) + " / " + fmtTimeShort(v.tefillaGra)), f.mincha.length && (y += calTimeLine("מנחה", f.mincha.join(" / "))), f.maariv.length && (y += calTimeLine("מעריב", f.maariv.join(" / "))), y += calTimeLine("שקיעה", fmtTimeShort(v.shkiah)), c += `<div class="cal-cell ${l?"today":""} ${h?"shabbos":""}"><div class="cal-header">${g}</div><div class="cal-divider"></div><div class="cal-times">${y}</div></div>`
+	}
+	const h = o + l,
+		d = h % 7 == 0 ? 0 : 7 - h % 7;
+	for (let e = 0; e < d; e++) c += '<div class="cal-cell empty"></div>';
+	s.innerHTML = c
+}
+
+function renderCalendarAgenda(e, t, n, a) {
+	const i = document.getElementById("calendar-agenda"),
+		s = document.getElementById("calendar-grid"),
+		o = document.getElementById("days-header");
+	s.style.display = "none", o.style.display = "none", i.style.display = "block";
+	const l = new Date(e, t + 1, 0).getDate(),
+		r = (new Date).toISOString().split("T")[0];
+	let c = "";
+	for (let i = 1; i <= l; i++) {
+		const s = new Date(e, t, i),
+			o = s.toISOString().split("T")[0],
+			l = o === r,
+			h = 6 === s.getDay(),
+			d = n[o] || {},
+			u = a[o] || [],
+			m = [s.toLocaleDateString("en-US", {
+				month: "short",
+				day: "numeric"
+			})];
+		d.hebDate && m.push(d.hebDate), d.holidays && d.holidays.length ? m.push(d.holidays[0]) : h && d.parsha && m.push(d.parsha);
+		const g = getZmanim(s),
+			v = getDaveningSchedule(s, g, u);
+		let f = "";
+		v.shacharis.length && (f += calTimeLine("שחרית", v.shacharis.join(" / "))), f += calTimeLine("סוף זמן שמע", fmtTimeShort(g.shemaMGA) + " / " + fmtTimeShort(g.shemaGra)), f += calTimeLine("סוף זמן תפילה", fmtTimeShort(g.tefillaMGA) + " / " + fmtTimeShort(g.tefillaGra)), v.mincha.length && (f += calTimeLine("מנחה", v.mincha.join(" / "))), v.maariv.length && (f += calTimeLine("מעריב", v.maariv.join(" / "))), f += calTimeLine("שקיעה", fmtTimeShort(g.shkiah)), c += `<div class="agenda-card ${l?"today":""} ${h?"shabbos":""}"><div class="cal-header">${m.join(" · ")}</div><div class="cal-divider"></div><div class="cal-times">${f}</div></div>`
+	}
+	i.innerHTML = c
+}
+
+function renderNewsletterInfo() {
+	const e = document.getElementById("nl-date-info");
+	let t = new Date;
+	for (; 6 !== t.getDay();) t.setDate(t.getDate() + 1);
+	const n = t.toLocaleDateString("en-US", {
+		weekday: "long",
+		month: "long",
+		day: "numeric",
+		year: "numeric"
+	});
+	e.textContent = `Generating for שבת: ${n}`
+}
+
+function isPirkeiAvosSeason(e) {
+	const t = e.getMonth();
+	return t >= 3 && t <= 8
+}
+async function renderNewsletter() {
+	const e = document.getElementById("nl-page");
+	e.innerHTML = '<div class="nl-placeholder">Generating newsletter...</div>';
+	let t = new Date;
+	for (; 5 !== t.getDay();) t.setDate(t.getDate() + 1);
+	let n = new Date(t);
+	n.setDate(n.getDate() + 1);
+	const a = getZmanim(t),
+		i = getZmanim(n),
+		s = await getHebrewDate(n),
+		o = await getHebcalData(n);
+	let l = "פרשת השבוע";
+	if (o && o.items) {
+		const e = eventsForDate(o, n).find(e => "parashat" === e.category);
+		e && (l = e.hebrew || e.title)
+	}
+	const r = document.getElementById("nl-mincha-override").value,
+		c = document.getElementById("nl-avos-override").value,
+		h = document.getElementById("nl-minchab-override").value,
+		d = document.getElementById("nl-torahstories-override").value,
+		u = document.getElementById("nl-shiur-topic").value,
+		m = (document.getElementById("nl-avosubanim-override").value, document.getElementById("nl-maariv-override").value),
+		g = document.getElementById("nl-special-shiur").value,
+		v = document.getElementById("nl-simcha").value,
+		f = document.getElementById("nl-announcements").value,
+		y = document.getElementById("nl-sponsors").value,
+		M = (document.getElementById("nl-seudos").value, fmtTime(a.candleLighting)),
+		T = r || fmtTime(new Date(a.shkiah.getTime() - 108e4)),
+		p = fmtTime(i.shkiah);
+	let D = i._sunsetMin - 40;
+	D > 1095 && (D = 1095);
+	const S = h || minutesToTimeStr(Math.floor(D)),
+		b = m || minutesToTimeStr(Math.floor(i._sunsetMin + 55)),
+		w = d || "9:45 AM",
+		I = isPirkeiAvosSeason(n),
+		$ = c || (I ? "פרק א" : ""),
+		C = n.toLocaleDateString("en-US", {
+			month: "long",
+			day: "numeric",
+			year: "numeric"
+		}),
+		N = s ? s.hebrew : "";
+	e.innerHTML = `<div class="nl-header"><div class="nl-logo"><img src="emblem.png" alt="KZY Emblem"></div><div class="nl-parsha"><h1>${l}</h1><div class="nl-shul-sub">${CONFIG.shulName} · ${CONFIG.shulNameHe}</div></div><div class="nl-dates"><div class="nl-heb-date">${N}</div><div class="nl-eng-date">${C}</div>${I?`<div class="nl-avos-ref">${$}</div>`:""}</div></div><div class="nl-body"><div class="nl-left">${v?`<div class="nl-announce-box highlight"><strong>מזל טוב!</strong>${v}</div>`:""}${f?`<div class="nl-announce-box"><strong>Announcements</strong>${f}</div>`:""}${u?`<div class="nl-section-title">שיעור</div><div class="nl-section-body">${u}</div><hr class="nl-divider">`:""}${g?`<div class="nl-section-title">Special Shiur / Event</div><div class="nl-section-body">${g}</div><hr class="nl-divider">`:""}${y?`<div class="nl-section-title">Sponsors & Dedications</div><div class="nl-section-body">${y}</div>`:""}</div><div class="nl-right"><table class="nl-schedule-table"><tr><th colspan="2">לוח זמנים לשבת קודש</th></tr><tr class="bold"><td>הדלקת נרות</td><td>${M}</td></tr><tr><td>מנחה ערב שבת</td><td>${T}</td></tr><tr class="section-break"><td>קבלת שבת</td><td>After Mincha</td></tr><tr><td>Torah & Stories</td><td>${w}</td></tr><tr class="bold"><td>שחרית</td><td>8:45 AM</td></tr><tr><td>סוף זמן ק״ש (גר״א)</td><td>${fmtTime(i.shemaGra)}</td></tr><tr><td>סוף זמן ק״ש (מג״א)</td><td>${fmtTime(i.shemaMGA)}</td></tr><tr class="section-break"><td>חצות</td><td>${fmtTime(i.chatzos)}</td></tr><tr><td>מנחה א</td><td>2:15 PM</td></tr><tr class="bold"><td>מנחה ב</td><td>${S}</td></tr><tr><td>שקיעה</td><td>${p}</td></tr><tr class="bold section-break"><td>מעריב / הבדלה</td><td>${b}</td></tr></table><table class="nl-weekday-table"><tr><th colspan="2">Weekday Schedule</th></tr><tr><td>שחרית (Mon-Fri)</td><td>7:00 AM</td></tr><tr><td>שחרית (Sunday)</td><td>8:45 AM</td></tr><tr><td>מעריב (Nightly)</td><td>${m||"8:30 PM"}</td></tr></table></div></div><div class="nl-footer"><strong>${CONFIG.shulName} · ${CONFIG.shulNameHe}</strong><br>${CONFIG.address}<br>${CONFIG.ravName} · לעילוי נשמת ר׳ יעקב דב שטרנבוך ז״ל</div>`
+}
+
+function printNewsletter() {
+	window.print()
+}
+
+function saveNewsletterDraft() {
+	const e = {};
+	["nl-mincha-override", "nl-avos-override", "nl-minchab-override", "nl-torahstories-override", "nl-shiur-topic", "nl-avosubanim-override", "nl-maariv-override", "nl-special-shiur", "nl-simcha", "nl-announcements", "nl-sponsors", "nl-seudos"].forEach(t => {
+		e[t] = document.getElementById(t).value
+	}), e._savedAt = (new Date).toISOString(), localStorage.setItem("kzy-newsletter-draft", JSON.stringify(e)), alert("Draft saved!")
+}
+
+function loadNewsletterDraft() {
+	const e = localStorage.getItem("kzy-newsletter-draft");
+	if (e) try {
+		const t = JSON.parse(e);
+		Object.keys(t).forEach(e => {
+			if (e.startsWith("_")) return;
+			const n = document.getElementById(e);
+			n && (n.value = t[e])
+		})
+	} catch (e) {
+		console.error("Error loading draft:", e)
+	}
+}
+let resizeTimer;
+window.addEventListener("resize", () => {
+	clearTimeout(resizeTimer), resizeTimer = setTimeout(() => renderCalendar(), 250)
+});
